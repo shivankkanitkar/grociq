@@ -1,0 +1,893 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f7f4e9">
+  <meta name="description" content="GrocIQ remembers what you buy, predicts what you need next, and keeps your grocery budget in sync.">
+  <meta property="og:title" content="GrocIQ — Never forget groceries again">
+  <meta property="og:description" content="Your groceries, budget and next shopping list — intelligently managed in one place.">
+  <meta property="og:type" content="website">
+  <title>GrocIQ — Never forget groceries again</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
+
+    :root {
+      --cream: #f7f4e9;
+      --cream-2: #efecdf;
+      --ink: #15231c;
+      --muted: #647168;
+      --green: #176b3a;
+      --green-dark: #0f4d2a;
+      --green-soft: #dcebdd;
+      --lime: #dff44f;
+      --lime-soft: #f2f8c9;
+      --white: #fffef9;
+      --line: rgba(21,35,28,.11);
+      --shadow: 0 24px 70px rgba(26,60,40,.12);
+      --shadow-soft: 0 12px 35px rgba(26,60,40,.08);
+      --radius: 28px;
+      --max: 1160px;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; scroll-padding-top: 96px; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 3% 3%, rgba(223,244,79,.16), transparent 24rem),
+        var(--cream);
+      font-family: "Manrope", "Avenir Next", "Segoe UI", sans-serif;
+      font-size: 16px;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: .18;
+      z-index: -1;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180' viewBox='0 0 180 180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.12'/%3E%3C/svg%3E");
+    }
+    button, input, select { font: inherit; }
+    button, a { -webkit-tap-highlight-color: transparent; }
+    button { cursor: pointer; }
+    a { color: inherit; }
+    img, svg { display: block; }
+    :focus-visible { outline: 3px solid rgba(23,107,58,.28); outline-offset: 3px; }
+
+    .shell { width: min(calc(100% - 40px), var(--max)); margin-inline: auto; }
+    .section { padding: 110px 0; position: relative; }
+    .section[id] { scroll-margin-top: 90px; }
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin: 0 0 18px;
+      color: var(--green);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: .15em;
+      text-transform: uppercase;
+    }
+    .eyebrow::before { content: ""; width: 20px; height: 2px; background: currentColor; border-radius: 20px; }
+    h1, h2, h3, p { margin-top: 0; }
+    h1, h2, h3 { letter-spacing: -.045em; line-height: 1.05; }
+    h1 { font-size: clamp(3.25rem, 7vw, 6.6rem); margin-bottom: 26px; font-weight: 800; }
+    h2 { font-size: clamp(2.35rem, 5vw, 4.6rem); margin-bottom: 20px; font-weight: 800; }
+    h3 { font-size: 1.22rem; margin-bottom: 10px; }
+    .lede { color: var(--muted); font-size: clamp(1.04rem, 1.5vw, 1.2rem); max-width: 620px; }
+    .section-head { max-width: 720px; margin-bottom: 54px; }
+    .section-head.center { text-align: center; margin-inline: auto; }
+    .section-head.center .lede { margin-inline: auto; }
+    .text-green { color: var(--green); }
+
+    .btn {
+      min-height: 54px;
+      padding: 0 22px;
+      border: 1px solid transparent;
+      border-radius: 15px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      color: white;
+      background: var(--green);
+      box-shadow: 0 10px 24px rgba(23,107,58,.18);
+      text-decoration: none;
+      font-weight: 800;
+      transition: transform .25s ease, box-shadow .25s ease, background .25s ease;
+    }
+    .btn:hover { transform: translateY(-2px); box-shadow: 0 14px 32px rgba(23,107,58,.24); background: var(--green-dark); }
+    .btn-secondary { background: transparent; color: var(--ink); border-color: var(--line); box-shadow: none; }
+    .btn-secondary:hover { background: rgba(255,255,255,.55); box-shadow: none; }
+    .btn-lime { color: var(--ink); background: var(--lime); box-shadow: none; }
+    .btn-lime:hover { background: #d2e745; box-shadow: none; }
+    .button-row { display: flex; flex-wrap: wrap; gap: 12px; }
+
+    .nav-wrap {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      padding: 14px 0;
+      background: rgba(247,244,233,.82);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(21,35,28,.06);
+    }
+    nav { height: 60px; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+    .logo { display: flex; align-items: center; gap: 10px; text-decoration: none; font-size: 1.35rem; font-weight: 800; letter-spacing: -.05em; }
+    .logo-mark {
+      width: 34px; height: 34px; border-radius: 11px;
+      display: grid; place-items: center;
+      background: var(--green); color: var(--lime);
+      transform: rotate(-5deg);
+    }
+    .logo-mark svg { width: 20px; height: 20px; }
+    .nav-links { display: flex; align-items: center; gap: 32px; }
+    .nav-links a { color: #405047; text-decoration: none; font-size: .9rem; font-weight: 700; transition: color .2s; }
+    .nav-links a:hover { color: var(--green); }
+    .nav-cta { min-height: 44px; padding-inline: 18px; border-radius: 13px; font-size: .9rem; }
+
+    .hero { min-height: calc(100vh - 89px); padding: 72px 0 84px; display: grid; align-items: center; }
+    .hero-grid { display: grid; grid-template-columns: minmax(0, .92fr) minmax(520px, 1.08fr); gap: 58px; align-items: center; }
+    .hero-copy { position: relative; z-index: 2; }
+    .hero h1 span { display: block; color: var(--green); }
+    .hero .lede { margin-bottom: 32px; }
+    .micro-proof { margin: 19px 0 0; display: flex; align-items: center; gap: 10px; color: var(--muted); font-size: .9rem; font-weight: 600; }
+    .faces { display: flex; }
+    .faces i { width: 25px; height: 25px; border: 2px solid var(--cream); border-radius: 50%; margin-left: -6px; background: var(--green-soft); display: grid; place-items: center; font-style: normal; font-size: 11px; }
+    .faces i:first-child { margin-left: 0; }
+
+    .hero-visual { position: relative; min-height: 610px; perspective: 1200px; }
+    .dashboard {
+      position: absolute;
+      inset: 24px 0 16px 56px;
+      padding: 28px;
+      border: 1px solid rgba(255,255,255,.8);
+      border-radius: 34px;
+      background: rgba(255,254,249,.88);
+      backdrop-filter: blur(22px);
+      box-shadow: 0 44px 100px rgba(30,67,45,.18), inset 0 1px rgba(255,255,255,.9);
+      transform: rotateY(-3deg) rotateX(1deg);
+      overflow: hidden;
+    }
+    .dashboard::after { content: ""; position: absolute; width: 260px; height: 260px; background: var(--lime); filter: blur(100px); opacity: .16; right: -100px; top: -80px; pointer-events: none; }
+    .dash-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 28px; }
+    .dash-title strong { font-size: 1.15rem; letter-spacing: -.03em; }
+    .dash-title span { display: block; color: var(--muted); font-size: .76rem; margin-top: 2px; }
+    .avatar { width: 38px; height: 38px; display: grid; place-items: center; background: var(--green-soft); border-radius: 50%; font-size: 16px; }
+    .dash-layout { display: grid; grid-template-columns: 1.28fr .82fr; gap: 16px; }
+    .panel { border: 1px solid var(--line); border-radius: 22px; background: rgba(255,255,255,.72); padding: 18px; }
+    .panel-label { margin: 0 0 14px; display: flex; align-items: center; justify-content: space-between; color: var(--muted); font-size: .72rem; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; }
+    .live-dot { width: 7px; height: 7px; background: #33a75f; border-radius: 50%; box-shadow: 0 0 0 5px rgba(51,167,95,.12); }
+    .inventory-list { display: grid; gap: 9px; }
+    .inventory-item { display: grid; grid-template-columns: 38px 1fr auto; align-items: center; gap: 11px; padding: 11px; background: var(--cream); border-radius: 15px; }
+    .food-icon { width: 38px; height: 38px; display: grid; place-items: center; background: white; border-radius: 12px; font-size: 19px; box-shadow: 0 4px 12px rgba(21,35,28,.06); }
+    .inventory-item strong { display: block; font-size: .82rem; line-height: 1.2; }
+    .inventory-item small { display: block; margin-top: 3px; color: var(--muted); font-size: .66rem; white-space: nowrap; }
+    .status { padding: 5px 8px; border-radius: 9px; font-size: .59rem; font-weight: 800; background: #fff1c8; color: #795711; }
+    .status.ok { color: var(--green); background: var(--green-soft); }
+    .side-stack { display: grid; gap: 16px; }
+    .budget-panel { background: var(--green); color: white; border-color: var(--green); }
+    .budget-panel .panel-label { color: rgba(255,255,255,.68); }
+    .budget-amount { font-size: 1.24rem; font-weight: 800; letter-spacing: -.04em; }
+    .budget-amount span { color: rgba(255,255,255,.55); font-size: .76rem; font-weight: 600; }
+    .progress { width: 100%; height: 8px; border-radius: 20px; background: rgba(255,255,255,.18); overflow: hidden; margin: 15px 0 8px; }
+    .progress > span { display: block; height: 100%; border-radius: inherit; width: 0; background: var(--lime); transition: width 1.3s cubic-bezier(.2,.7,.2,1); }
+    .is-visible .progress > span, .dashboard .progress > span { width: 81%; }
+    .budget-caption { color: rgba(255,255,255,.64); font-size: .64rem; }
+    .insight-panel { background: var(--lime-soft); border-color: rgba(124,149,39,.14); }
+    .insight-panel strong { display: block; font-size: .9rem; line-height: 1.35; }
+    .insight-panel small { color: var(--muted); font-size: .65rem; }
+    .dash-bottom { margin-top: 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .mini-stat { display: flex; align-items: center; gap: 11px; }
+    .mini-stat b { font-size: 1.1rem; }
+    .mini-stat span { display: block; color: var(--muted); font-size: .64rem; }
+
+    .grocery-motion { position: absolute; inset: 0; pointer-events: none; z-index: 5; }
+    .grocery-bag {
+      position: absolute; left: 4px; bottom: 58px; width: 100px; height: 116px;
+      border-radius: 10px 10px 24px 24px; background: #cfaa70;
+      box-shadow: 0 18px 30px rgba(74,54,31,.16); transform: rotate(3deg);
+    }
+    .grocery-bag::before { content: ""; position: absolute; width: 48px; height: 28px; border: 6px solid #b78c54; border-bottom: 0; border-radius: 25px 25px 0 0; left: 21px; top: -26px; }
+    .grocery-bag::after { content: "IQ"; position: absolute; inset: 0; display: grid; place-items: center; color: rgba(76,52,24,.48); font-size: 1.35rem; font-weight: 800; letter-spacing: -.06em; }
+    .flying-food { position: absolute; left: 39px; bottom: 130px; font-size: 27px; filter: drop-shadow(0 6px 5px rgba(26,52,36,.14)); animation: fly-in 8s ease-in-out infinite; opacity: 0; }
+    .flying-food:nth-child(2) { animation-delay: .7s; }
+    .flying-food:nth-child(3) { animation-delay: 1.4s; }
+    .flying-food:nth-child(4) { animation-delay: 2.1s; }
+    @keyframes fly-in {
+      0%, 5% { opacity: 0; transform: translate(0, 20px) scale(.75) rotate(-12deg); }
+      12%, 24% { opacity: 1; transform: translate(58px, -70px) scale(1) rotate(6deg); }
+      36%, 88% { opacity: 0; transform: translate(200px, -170px) scale(.55) rotate(0); }
+      100% { opacity: 0; }
+    }
+    .milk-alert {
+      position: absolute; z-index: 8; right: -18px; bottom: 44px;
+      width: 235px; padding: 13px 15px; display: flex; gap: 11px; align-items: center;
+      background: #fff; border: 1px solid var(--line); border-radius: 16px;
+      box-shadow: var(--shadow-soft); font-size: .72rem; font-weight: 800;
+      animation: alert-cycle 8s ease-in-out infinite;
+    }
+    .milk-alert span { width: 36px; height: 36px; display: grid; place-items: center; background: var(--lime-soft); border-radius: 11px; font-size: 18px; }
+    @keyframes alert-cycle { 0%, 43% { opacity: 0; transform: translateY(15px) scale(.95); } 52%, 83% { opacity: 1; transform: none; } 94%, 100% { opacity: 0; transform: translateY(-8px); } }
+    .float-icon { position: absolute; font-size: 21px; opacity: .15; filter: grayscale(.25); animation: float 7s ease-in-out infinite; }
+    .float-1 { top: 8%; right: -3%; }
+    .float-2 { bottom: 3%; right: 30%; animation-delay: -2s; }
+    .float-3 { top: 21%; left: -5%; animation-delay: -4s; }
+    @keyframes float { 50% { transform: translateY(-13px) rotate(6deg); } }
+
+    .problem-section { background: var(--ink); color: white; overflow: hidden; }
+    .problem-section::before { content: "?"; position: absolute; right: 2%; top: -180px; color: rgba(255,255,255,.025); font-size: 600px; font-weight: 800; line-height: 1; }
+    .problem-section .eyebrow { color: var(--lime); }
+    .problem-section .lede { color: rgba(255,255,255,.58); }
+    .problem-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+    .problem-card { min-height: 235px; padding: 25px; border: 1px solid rgba(255,255,255,.09); border-radius: 24px; background: rgba(255,255,255,.045); transition: transform .25s ease, background .25s ease; }
+    .problem-card:hover { transform: translateY(-6px); background: rgba(255,255,255,.07); }
+    .problem-no { color: var(--lime); font-size: .72rem; font-weight: 800; letter-spacing: .12em; }
+    .problem-icon { width: 48px; height: 48px; margin: 25px 0 22px; display: grid; place-items: center; border-radius: 15px; background: rgba(223,244,79,.1); font-size: 23px; }
+    .problem-card h3 { font-size: 1.12rem; letter-spacing: -.025em; }
+    .problem-card p { color: rgba(255,255,255,.53); font-size: .86rem; line-height: 1.55; margin-bottom: 0; }
+
+    .how-grid { display: grid; grid-template-columns: 1fr .92fr; gap: 80px; align-items: center; }
+    .flow { display: grid; gap: 10px; }
+    .flow-step { display: flex; align-items: center; gap: 15px; padding: 17px 18px; border: 1px solid var(--line); border-radius: 18px; background: rgba(255,254,249,.7); box-shadow: 0 8px 24px rgba(24,57,36,.04); }
+    .flow-step:nth-child(3) { margin-left: 34px; }
+    .flow-step:nth-child(5) { margin-left: 68px; }
+    .flow-step:nth-child(7) { margin-left: 102px; }
+    .flow-step:nth-child(9) { margin-left: 136px; color: white; background: var(--green); border-color: var(--green); }
+    .flow-icon { width: 40px; height: 40px; flex: 0 0 auto; display: grid; place-items: center; border-radius: 12px; background: var(--green-soft); font-size: 19px; }
+    .flow-step:nth-child(9) .flow-icon { background: var(--lime); }
+    .flow-step strong { display: block; font-size: .94rem; }
+    .flow-step small { display: block; color: var(--muted); font-size: .72rem; }
+    .flow-step:nth-child(9) small { color: rgba(255,255,255,.65); }
+    .flow-arrow { margin-left: 37px; height: 16px; color: #98a39c; }
+    .flow-card { padding: 34px; border-radius: var(--radius); background: var(--white); box-shadow: var(--shadow); border: 1px solid rgba(255,255,255,.9); }
+    .timeline { display: grid; gap: 0; margin-top: 30px; }
+    .timeline-row { display: grid; grid-template-columns: 38px 1fr; gap: 14px; min-height: 82px; }
+    .timeline-node { position: relative; width: 38px; height: 38px; display: grid; place-items: center; background: var(--green-soft); color: var(--green); border-radius: 50%; font-size: 13px; font-weight: 800; }
+    .timeline-node::after { content: ""; position: absolute; width: 1px; height: 44px; top: 38px; background: var(--line); }
+    .timeline-row:last-child .timeline-node { background: var(--lime); color: var(--ink); }
+    .timeline-row:last-child .timeline-node::after { display: none; }
+    .timeline-copy strong { display: block; font-size: .95rem; }
+    .timeline-copy span { color: var(--muted); font-size: .8rem; }
+
+    .basket-section { background: linear-gradient(180deg, var(--cream-2) 0, var(--cream) 100%); }
+    .basket-shell { display: grid; grid-template-columns: 1.08fr .92fr; gap: 22px; align-items: stretch; }
+    .basket-card, .recommend-card { border: 1px solid rgba(255,255,255,.85); border-radius: 30px; box-shadow: var(--shadow); overflow: hidden; }
+    .basket-card { background: var(--white); }
+    .card-topline { padding: 25px 27px 20px; display: flex; align-items: center; justify-content: space-between; gap: 16px; border-bottom: 1px solid var(--line); }
+    .card-topline h3 { margin: 0; }
+    .pill { padding: 7px 11px; color: var(--green); background: var(--green-soft); border-radius: 999px; font-size: .67rem; font-weight: 800; }
+    .basket-items { padding: 12px 17px; }
+    .basket-item { display: grid; grid-template-columns: 28px 39px 1fr auto; gap: 12px; align-items: center; padding: 12px 9px; border-bottom: 1px solid var(--line); transition: opacity .2s, transform .2s, background .2s; border-radius: 13px; }
+    .basket-item:last-child { border-bottom: 0; }
+    .basket-item:hover { background: var(--cream); }
+    .basket-item.is-off { opacity: .43; }
+    .basket-item.pop { animation: item-pop .45s ease; }
+    @keyframes item-pop { 50% { transform: scale(1.025); background: var(--lime-soft); } }
+    .check-wrap { width: 22px; height: 22px; position: relative; }
+    .check-wrap input { position: absolute; opacity: 0; }
+    .check-ui { width: 22px; height: 22px; display: grid; place-items: center; border: 1.5px solid #a3ada7; border-radius: 7px; transition: .2s; }
+    .check-ui::after { content: "✓"; color: white; font-size: 13px; font-weight: 800; opacity: 0; transform: scale(.6); transition: .2s; }
+    .check-wrap input:checked + .check-ui { background: var(--green); border-color: var(--green); }
+    .check-wrap input:checked + .check-ui::after { opacity: 1; transform: scale(1); }
+    .check-wrap input:focus-visible + .check-ui { outline: 3px solid rgba(23,107,58,.25); outline-offset: 2px; }
+    .item-emoji { width: 39px; height: 39px; display: grid; place-items: center; border-radius: 12px; background: var(--cream); }
+    .item-copy strong { display: block; font-size: .88rem; line-height: 1.25; }
+    .item-copy small { color: var(--muted); font-size: .68rem; }
+    .item-price { font-size: .83rem; font-weight: 800; }
+    .basket-summary { padding: 24px 27px; color: white; background: var(--green); }
+    .summary-line { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: .78rem; color: rgba(255,255,255,.7); }
+    .summary-line.total { margin-bottom: 13px; color: white; font-size: 1rem; }
+    .summary-line.total strong { font-size: 1.55rem; letter-spacing: -.04em; transition: transform .2s; }
+    .summary-line.total strong.bump { transform: scale(1.12); }
+    .summary-message { margin: 15px 0 0; padding-top: 14px; border-top: 1px solid rgba(255,255,255,.14); color: var(--lime); font-size: .77rem; font-weight: 800; }
+    .recommend-card { padding: 28px; background: var(--ink); color: white; }
+    .recommend-card .eyebrow { color: var(--lime); margin-bottom: 10px; }
+    .recommend-card h3 { color: white; font-size: 1.72rem; }
+    .recommend-card > p { color: rgba(255,255,255,.53); font-size: .8rem; }
+    .target-row { display: flex; justify-content: space-between; color: rgba(255,255,255,.65); font-size: .7rem; }
+    .target-row b { color: white; }
+    .target-progress { height: 10px; margin: 10px 0 7px; background: rgba(255,255,255,.11); border-radius: 30px; overflow: hidden; }
+    .target-progress span { display: block; height: 100%; width: 88.5%; background: linear-gradient(90deg, #bcd933, var(--lime)); border-radius: inherit; transition: width .5s ease; }
+    #targetMessage { color: var(--lime); font-size: .69rem; font-weight: 700; }
+    .recs { margin-top: 23px; display: grid; gap: 10px; }
+    .rec-item { display: grid; grid-template-columns: 40px 1fr auto; gap: 11px; align-items: center; padding: 12px; background: rgba(255,255,255,.055); border: 1px solid rgba(255,255,255,.08); border-radius: 16px; transition: background .2s, opacity .2s; }
+    .rec-item:hover { background: rgba(255,255,255,.08); }
+    .rec-item.is-added { opacity: .55; }
+    .rec-item .item-emoji { background: rgba(255,255,255,.08); }
+    .rec-copy strong { display: block; font-size: .8rem; }
+    .rec-copy small { color: rgba(255,255,255,.5); font-size: .61rem; line-height: 1.2; display: block; }
+    .add-btn { padding: 7px 10px; border: 1px solid rgba(255,255,255,.18); border-radius: 9px; color: var(--lime); background: transparent; font-size: .65rem; font-weight: 800; transition: .2s; }
+    .add-btn:hover { color: var(--ink); background: var(--lime); border-color: var(--lime); }
+    .add-btn:disabled { cursor: default; color: white; }
+
+    .insights-layout { display: grid; grid-template-columns: 1.08fr .92fr; gap: 22px; }
+    .analytics-card { padding: 28px; border-radius: 30px; background: var(--white); box-shadow: var(--shadow); border: 1px solid rgba(255,255,255,.9); }
+    .analytics-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+    .analytics-head h3 { margin: 0; }
+    .period { padding: 7px 10px; background: var(--cream); border-radius: 9px; color: var(--muted); font-size: .65rem; font-weight: 700; }
+    .spend-row { display: grid; grid-template-columns: 1fr 1.4fr; gap: 20px; align-items: end; padding: 20px; background: var(--green); color: white; border-radius: 21px; }
+    .spend-number span { display: block; color: rgba(255,255,255,.62); font-size: .7rem; }
+    .spend-number strong { display: block; font-size: 2rem; letter-spacing: -.05em; }
+    .spend-number small { color: var(--lime); font-size: .67rem; font-weight: 700; }
+    .bars { height: 95px; display: flex; gap: 7px; align-items: flex-end; }
+    .bar { flex: 1; height: var(--h); min-width: 8px; background: rgba(255,255,255,.19); border-radius: 5px 5px 2px 2px; transform-origin: bottom; transform: scaleY(0); transition: transform .8s ease; }
+    .is-visible .bar { transform: scaleY(1); }
+    .bar:nth-child(6), .bar:nth-child(7) { background: var(--lime); }
+    .metric-grid { margin-top: 14px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .metric { padding: 17px; border: 1px solid var(--line); border-radius: 17px; }
+    .metric span { color: var(--muted); font-size: .65rem; }
+    .metric strong { display: block; font-size: .91rem; margin-top: 3px; }
+    .metric.saving { background: var(--lime-soft); border-color: transparent; }
+    .right-insights { display: grid; gap: 22px; }
+    .roast-card { min-height: 265px; padding: 28px; display: flex; flex-direction: column; background: var(--ink); color: white; border-radius: 30px; box-shadow: var(--shadow); }
+    .roast-card .eyebrow { color: var(--lime); margin-bottom: 10px; }
+    .roast-card h3 { font-size: 1.7rem; margin-bottom: 18px; }
+    .roast-message { flex: 1; margin: 0 0 20px; color: rgba(255,255,255,.73); font-size: 1rem; line-height: 1.55; transition: opacity .18s, transform .18s; }
+    .roast-message.changing { opacity: 0; transform: translateY(7px); }
+    .roast-btn { align-self: flex-start; border: 0; }
+    .nutrition-card { padding: 24px 28px; border: 1px solid var(--line); border-radius: 25px; background: rgba(255,254,249,.72); }
+    .nutrition-head { display: flex; justify-content: space-between; align-items: start; gap: 20px; margin-bottom: 19px; }
+    .nutrition-head h3 { margin-bottom: 3px; }
+    .nutrition-head p { color: var(--muted); font-size: .68rem; max-width: 245px; margin: 0; line-height: 1.45; }
+    .macro-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+    .macro { padding: 10px; background: var(--cream); border-radius: 12px; text-align: center; }
+    .macro strong { display: block; font-size: .78rem; }
+    .macro span { color: var(--muted); font-size: .58rem; }
+
+    .future-section { padding: 80px 0; }
+    .future-card { padding: 42px; display: grid; grid-template-columns: .8fr 1.2fr; gap: 55px; align-items: center; background: var(--green); color: white; border-radius: 32px; overflow: hidden; position: relative; }
+    .future-card::after { content: ""; position: absolute; width: 300px; height: 300px; right: -120px; top: -150px; background: var(--lime); opacity: .12; filter: blur(30px); border-radius: 50%; }
+    .future-card .eyebrow { color: var(--lime); }
+    .future-card h2 { font-size: clamp(2.2rem,4vw,3.7rem); }
+    .future-card p { color: rgba(255,255,255,.62); margin-bottom: 0; }
+    .commerce-flow { display: flex; align-items: center; justify-content: space-between; position: relative; z-index: 1; }
+    .commerce-step { width: 92px; text-align: center; }
+    .commerce-icon { width: 60px; height: 60px; margin: 0 auto 9px; display: grid; place-items: center; background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.12); border-radius: 18px; font-size: 25px; }
+    .commerce-step strong { display: block; font-size: .68rem; line-height: 1.25; }
+    .commerce-arrow { color: var(--lime); opacity: .7; }
+    .future-partners { margin-top: 25px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,.12); }
+    .future-label { color: var(--lime); font-size: .62rem; font-weight: 800; text-transform: uppercase; letter-spacing: .14em; }
+    .partner-list { margin-top: 8px; display: flex; flex-wrap: wrap; gap: 8px; }
+    .partner-list span { padding: 6px 9px; background: rgba(255,255,255,.08); border-radius: 8px; color: rgba(255,255,255,.72); font-size: .62rem; font-weight: 700; }
+
+    .waitlist-section { padding-top: 110px; }
+    .waitlist-wrap { padding: 76px 26px; position: relative; overflow: hidden; border-radius: 38px; background: var(--lime); text-align: center; }
+    .waitlist-wrap::before, .waitlist-wrap::after { content: ""; position: absolute; width: 250px; height: 250px; border-radius: 50%; border: 1px solid rgba(21,35,28,.11); }
+    .waitlist-wrap::before { left: -120px; top: -90px; }
+    .waitlist-wrap::after { right: -90px; bottom: -150px; width: 350px; height: 350px; }
+    .waitlist-copy { position: relative; z-index: 1; }
+    .waitlist-wrap .eyebrow { color: var(--ink); }
+    .waitlist-wrap h2 { max-width: 800px; margin-inline: auto; }
+    .waitlist-wrap .lede { color: rgba(21,35,28,.68); margin-inline: auto; }
+    .waitlist-form { position: relative; z-index: 1; width: min(100%, 780px); margin: 36px auto 0; padding: 16px; display: grid; grid-template-columns: .9fr 1.1fr 1.25fr auto; gap: 9px; background: rgba(255,255,255,.58); border: 1px solid rgba(255,255,255,.65); border-radius: 20px; backdrop-filter: blur(10px); }
+    .field { min-width: 0; }
+    .field label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+    .field input, .field select { width: 100%; height: 49px; padding: 0 13px; border: 1px solid transparent; border-radius: 12px; color: var(--ink); background: white; font-size: .78rem; outline: 0; }
+    .field input:focus, .field select:focus { border-color: var(--green); box-shadow: 0 0 0 3px rgba(23,107,58,.1); }
+    .waitlist-form .btn { min-height: 49px; border-radius: 12px; font-size: .78rem; white-space: nowrap; }
+    .waitlist-error { display: none; position: relative; z-index: 1; margin: 12px auto 0; color: #8d271d; font-size: .78rem; font-weight: 700; }
+    .waitlist-error.show { display: block; }
+    .success-state { display: none; position: relative; z-index: 1; margin: 36px auto 0; width: min(100%, 560px); padding: 28px; border-radius: 20px; background: rgba(255,255,255,.7); }
+    .success-state.show { display: block; animation: success-in .45s ease both; }
+    .success-icon { font-size: 2.4rem; }
+    .success-state h3 { font-size: 1.6rem; margin: 8px 0; }
+    .success-state p { color: rgba(21,35,28,.64); margin: 0; font-size: .9rem; }
+    @keyframes success-in { from { opacity: 0; transform: translateY(12px) scale(.98); } }
+
+    .faq-list { max-width: 860px; margin: 0 auto; border-top: 1px solid var(--line); }
+    details { border-bottom: 1px solid var(--line); }
+    summary { list-style: none; padding: 24px 4px; display: flex; justify-content: space-between; gap: 20px; cursor: pointer; font-weight: 800; letter-spacing: -.02em; }
+    summary::-webkit-details-marker { display: none; }
+    summary::after { content: "+"; width: 28px; height: 28px; flex: 0 0 auto; display: grid; place-items: center; border-radius: 50%; background: var(--green-soft); color: var(--green); transition: transform .25s; }
+    details[open] summary::after { transform: rotate(45deg); }
+    details p { max-width: 720px; padding: 0 4px 25px; color: var(--muted); margin: 0; font-size: .9rem; }
+
+    footer { padding: 45px 0 34px; border-top: 1px solid var(--line); }
+    .footer-grid { display: grid; grid-template-columns: 1fr auto; gap: 24px; align-items: end; }
+    .footer-brand p { color: var(--muted); font-size: .78rem; margin: 9px 0 0; }
+    .footer-note { color: var(--muted); text-align: right; font-size: .7rem; }
+    .footer-note span { display: block; }
+
+    .reveal { opacity: 0; transform: translateY(24px); transition: opacity .7s ease, transform .7s ease; }
+    .reveal.is-visible { opacity: 1; transform: none; }
+    .mobile-cta { display: none; }
+
+    @media (max-width: 1020px) {
+      .hero-grid { grid-template-columns: 1fr; }
+      .hero-copy { max-width: 760px; }
+      .hero-visual { min-height: 590px; width: min(100%, 680px); margin: 0 auto; }
+      .problem-grid { grid-template-columns: 1fr 1fr; }
+      .how-grid { gap: 42px; }
+      .basket-shell, .insights-layout { grid-template-columns: 1fr; }
+      .recommend-card { display: grid; grid-template-columns: .8fr 1.2fr; column-gap: 28px; }
+      .recommend-card .recs { grid-column: 2; grid-row: 1 / span 5; margin-top: 0; }
+      .future-card { grid-template-columns: 1fr; gap: 34px; }
+      .waitlist-form { grid-template-columns: 1fr 1fr; }
+      .waitlist-form .btn { grid-column: 2; }
+    }
+
+    @media (max-width: 720px) {
+      .shell { width: min(calc(100% - 28px), var(--max)); }
+      .section { padding: 82px 0; }
+      .nav-links { display: none; }
+      .nav-cta { min-height: 42px; }
+      .hero { padding: 46px 0 64px; min-height: auto; }
+      .hero-grid { gap: 44px; }
+      h1 { font-size: clamp(3rem, 15vw, 4.6rem); }
+      .hero .lede { font-size: 1rem; }
+      .button-row .btn { flex: 1; min-width: 160px; }
+      .hero-visual { min-height: 555px; }
+      .dashboard { inset: 12px 0 20px; padding: 18px; border-radius: 27px; transform: none; }
+      .dash-layout { grid-template-columns: 1fr; }
+      .side-stack { grid-template-columns: 1fr 1fr; }
+      .dash-bottom { display: none; }
+      .inventory-item { grid-template-columns: 36px 1fr auto; }
+      .grocery-bag { transform: scale(.72) rotate(3deg); transform-origin: bottom left; left: -5px; bottom: 12px; }
+      .flying-food { left: 21px; bottom: 93px; }
+      .milk-alert { right: 2px; bottom: 0; width: 220px; }
+      .float-icon { display: none; }
+      .problem-grid { grid-template-columns: 1fr; }
+      .problem-card { min-height: auto; }
+      .how-grid { grid-template-columns: 1fr; }
+      .flow-step:nth-child(n) { margin-left: 0; }
+      .flow-arrow { margin-left: 36px; }
+      .flow-card { padding: 25px; }
+      .basket-card, .recommend-card, .analytics-card, .roast-card { border-radius: 24px; }
+      .basket-item { grid-template-columns: 25px 36px 1fr auto; gap: 9px; }
+      .item-copy small { white-space: normal; line-height: 1.25; display: block; }
+      .recommend-card { display: block; padding: 23px; }
+      .recommend-card .recs { margin-top: 23px; }
+      .spend-row { grid-template-columns: 1fr; }
+      .metric-grid { grid-template-columns: 1fr 1fr; }
+      .nutrition-head { display: block; }
+      .macro-row { grid-template-columns: 1fr 1fr; }
+      .future-card { padding: 32px 22px; }
+      .commerce-flow { display: grid; grid-template-columns: 1fr 22px 1fr; gap: 16px 4px; }
+      .commerce-step { width: auto; }
+      .commerce-flow .commerce-arrow:nth-of-type(6) { transform: rotate(90deg); }
+      .waitlist-wrap { padding: 58px 16px; border-radius: 28px; }
+      .waitlist-form { grid-template-columns: 1fr; padding: 12px; }
+      .waitlist-form .btn { grid-column: auto; }
+      .footer-grid { grid-template-columns: 1fr; }
+      .footer-note { text-align: left; }
+      .mobile-cta { position: fixed; z-index: 45; left: 14px; right: 14px; bottom: 12px; min-height: 50px; display: flex; opacity: 0; visibility: hidden; transform: translateY(20px); transition: .3s; }
+      .mobile-cta.show { opacity: 1; visibility: visible; transform: none; }
+      body { padding-bottom: 70px; }
+    }
+
+    @media (max-width: 420px) {
+      .nav-cta { display: none; }
+      .hero-visual { min-height: 580px; }
+      .dashboard { padding: 15px; }
+      .inventory-item { padding: 9px; }
+      .side-stack { grid-template-columns: 1fr; }
+      .insight-panel { display: none; }
+      .milk-alert { font-size: .67rem; width: 205px; }
+      .metric-grid { grid-template-columns: 1fr; }
+      .basket-item { grid-template-columns: 23px 34px 1fr auto; }
+      .basket-items { padding-inline: 9px; }
+      .card-topline, .basket-summary { padding-inline: 18px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+      .reveal { opacity: 1; transform: none; }
+      .bar { transform: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="nav-wrap">
+    <nav class="shell" aria-label="Main navigation">
+      <a class="logo" href="#top" aria-label="GrocIQ home">
+        <span class="logo-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M6 5h12l-1.1 11H7.1L6 5Z" stroke="currentColor" stroke-width="2"/><path d="M9 5a3 3 0 0 1 6 0M9 20h.01M15 20h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        </span>
+        GrocIQ
+      </a>
+      <div class="nav-links">
+        <a href="#how">How It Works</a>
+        <a href="#basket">Smart Basket</a>
+        <a href="#insights">Insights</a>
+      </div>
+      <a class="btn nav-cta" href="#waitlist">Join Waitlist <span aria-hidden="true">↗</span></a>
+    </nav>
+  </div>
+
+  <main id="top">
+    <section class="hero">
+      <div class="shell hero-grid">
+        <div class="hero-copy reveal">
+          <p class="eyebrow">Grocery intelligence, at home</p>
+          <h1>Never forget <span>groceries again.</span></h1>
+          <p class="lede">Your groceries, budget and next shopping list — intelligently managed in one place.</p>
+          <div class="button-row">
+            <a class="btn" href="#waitlist">Join the Waitlist <span aria-hidden="true">→</span></a>
+            <a class="btn btn-secondary" href="#how">See How It Works <span aria-hidden="true">↓</span></a>
+          </div>
+          <div class="micro-proof">
+            <span class="faces" aria-hidden="true"><i>🥛</i><i>🥚</i><i>🍌</i></span>
+            Be among the first to try GrocIQ.
+          </div>
+        </div>
+
+        <div class="hero-visual reveal" aria-label="Preview of the GrocIQ inventory dashboard">
+          <span class="float-icon float-1" aria-hidden="true">🍋</span>
+          <span class="float-icon float-2" aria-hidden="true">🥦</span>
+          <span class="float-icon float-3" aria-hidden="true">🥕</span>
+          <div class="dashboard">
+            <div class="dash-top">
+              <div class="dash-title"><strong>Good morning, Anya</strong><span>Your kitchen at a glance</span></div>
+              <div class="avatar" aria-hidden="true">A</div>
+            </div>
+            <div class="dash-layout">
+              <div class="panel">
+                <div class="panel-label"><span>Home inventory</span><span class="live-dot"></span></div>
+                <div class="inventory-list">
+                  <div class="inventory-item"><span class="food-icon">🥛</span><div><strong>Milk</strong><small>Running out tomorrow</small></div><span class="status">20%</span></div>
+                  <div class="inventory-item"><span class="food-icon">🥚</span><div><strong>Eggs</strong><small>4 remaining</small></div><span class="status ok">4 left</span></div>
+                  <div class="inventory-item"><span class="food-icon">🍞</span><div><strong>Bread</strong><small>2 days left</small></div><span class="status ok">Good</span></div>
+                  <div class="inventory-item"><span class="food-icon">☕</span><div><strong>Coffee</strong><small>Low stock</small></div><span class="status">Low</span></div>
+                </div>
+              </div>
+              <div class="side-stack">
+                <div class="panel budget-panel">
+                  <div class="panel-label"><span>Weekly budget</span><span>81%</span></div>
+                  <div class="budget-amount">₹2,840 <span>/ ₹3,500</span></div>
+                  <div class="progress" aria-label="81 percent of weekly budget used"><span></span></div>
+                  <div class="budget-caption">₹660 left this week</div>
+                </div>
+                <div class="panel insight-panel">
+                  <div class="panel-label"><span>Smart insight</span><span>✦</span></div>
+                  <strong>Snack spending is 28% higher this week 👀</strong>
+                  <small>Tap to see your breakdown</small>
+                </div>
+              </div>
+            </div>
+            <div class="dash-bottom">
+              <div class="panel mini-stat"><span class="food-icon">🧺</span><div><b>5</b><span>items in Next Basket</span></div></div>
+              <div class="panel mini-stat"><span class="food-icon">↘</span><div><b>₹1,250</b><span>potential monthly saving</span></div></div>
+            </div>
+          </div>
+          <div class="grocery-motion" aria-hidden="true">
+            <div class="grocery-bag"></div>
+            <span class="flying-food">🥛</span><span class="flying-food">🥚</span><span class="flying-food">🍞</span><span class="flying-food">🍌</span>
+            <div class="milk-alert"><span>🥛</span><div>Milk may run out tomorrow<br><small style="color:#647168;font-weight:600">Moved to Next Basket →</small></div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section problem-section" aria-labelledby="problem-title">
+      <div class="shell">
+        <div class="section-head reveal">
+          <p class="eyebrow">The quiet grocery chaos</p>
+          <h2 id="problem-title">Your grocery list shouldn't live in your head.</h2>
+          <p class="lede">Small gaps in memory turn into repeat orders, missing essentials and budgets that never quite add up.</p>
+        </div>
+        <div class="problem-grid">
+          <article class="problem-card reveal"><span class="problem-no">01</span><div class="problem-icon">🥛</div><h3>Do we still have milk?</h3><p>You don't remember what is already at home.</p></article>
+          <article class="problem-card reveal"><span class="problem-no">02</span><div class="problem-icon">💭</div><h3>Forgot something again?</h3><p>You remember another item right after placing the order.</p></article>
+          <article class="problem-card reveal"><span class="problem-no">03</span><div class="problem-icon">🔁</div><h3>Same items every week.</h3><p>Milk, eggs, bread and household essentials keep repeating.</p></article>
+          <article class="problem-card reveal"><span class="problem-no">04</span><div class="problem-icon">₹</div><h3>Where did the money go?</h3><p>Small grocery orders quietly add up.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="how" aria-labelledby="how-title">
+      <div class="shell how-grid">
+        <div class="reveal">
+          <p class="eyebrow">How GrocIQ works</p>
+          <h2 id="how-title">Your groceries, <span class="text-green">on autopilot.</span></h2>
+          <p class="lede">GrocIQ connects the everyday dots—from what entered your kitchen to what should enter your next basket.</p>
+          <div class="flow" aria-label="GrocIQ product flow">
+            <div class="flow-step"><span class="flow-icon">🧾</span><div><strong>Buy</strong><small>Add what came home</small></div></div><div class="flow-arrow">↓</div>
+            <div class="flow-step"><span class="flow-icon">◎</span><div><strong>GrocIQ remembers</strong><small>Your home inventory stays current</small></div></div><div class="flow-arrow">↓</div>
+            <div class="flow-step"><span class="flow-icon">✦</span><div><strong>GrocIQ learns</strong><small>Patterns form over time</small></div></div><div class="flow-arrow">↓</div>
+            <div class="flow-step"><span class="flow-icon">↗</span><div><strong>GrocIQ predicts</strong><small>Refills arrive before the last drop</small></div></div><div class="flow-arrow">↓</div>
+            <div class="flow-step"><span class="flow-icon">🧺</span><div><strong>Smart Basket</strong><small>Your next list, ready to review</small></div></div>
+          </div>
+        </div>
+        <aside class="flow-card reveal">
+          <span class="pill">Example pattern</span>
+          <h3 style="font-size:1.8rem;margin-top:20px">Milk, understood.</h3>
+          <p style="color:var(--muted);font-size:.9rem">A small everyday purchase becomes a useful, timely prediction.</p>
+          <div class="timeline">
+            <div class="timeline-row"><span class="timeline-node">1</span><div class="timeline-copy"><strong>You buy milk</strong><span>Added to home inventory</span></div></div>
+            <div class="timeline-row"><span class="timeline-node">2</span><div class="timeline-copy"><strong>Every 6–7 days</strong><span>GrocIQ learns your rhythm</span></div></div>
+            <div class="timeline-row"><span class="timeline-node">3</span><div class="timeline-copy"><strong>Milk may run out tomorrow</strong><span>A reminder appears at the right time</span></div></div>
+            <div class="timeline-row"><span class="timeline-node">✓</span><div class="timeline-copy"><strong>Added to Next Basket</strong><span>You remain in control</span></div></div>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <section class="section basket-section" id="basket" aria-labelledby="basket-title">
+      <div class="shell">
+        <div class="section-head center reveal">
+          <p class="eyebrow">Smart Basket</p>
+          <h2 id="basket-title">Your next grocery list, <span class="text-green">already made.</span></h2>
+          <p class="lede">Built from what is running low, what you buy regularly and what fits your budget. Review it, adjust it, then shop.</p>
+        </div>
+        <div class="basket-shell">
+          <div class="basket-card reveal">
+            <div class="card-topline"><div><h3>Next Basket</h3><small style="color:var(--muted)">Suggested for this week</small></div><span class="pill"><span id="selectedCount">5</span> selected</span></div>
+            <div class="basket-items" id="basketItems">
+              <label class="basket-item"><span class="check-wrap"><input class="basket-check" type="checkbox" checked data-price="68"><span class="check-ui"></span></span><span class="item-emoji">🥛</span><span class="item-copy"><strong>Milk</strong><small>Running out tomorrow</small></span><span class="item-price">₹68</span></label>
+              <label class="basket-item"><span class="check-wrap"><input class="basket-check" type="checkbox" checked data-price="95"><span class="check-ui"></span></span><span class="item-emoji">🥚</span><span class="item-copy"><strong>Eggs</strong><small>Only 4 remaining</small></span><span class="item-price">₹95</span></label>
+              <label class="basket-item"><span class="check-wrap"><input class="basket-check" type="checkbox" checked data-price="72"><span class="check-ui"></span></span><span class="item-emoji">🍌</span><span class="item-copy"><strong>Bananas</strong><small>Weekly recurring purchase</small></span><span class="item-price">₹72</span></label>
+              <label class="basket-item"><span class="check-wrap"><input class="basket-check" type="checkbox" checked data-price="210"><span class="check-ui"></span></span><span class="item-emoji">🥣</span><span class="item-copy"><strong>Oats</strong><small>Usually reordered around now</small></span><span class="item-price">₹210</span></label>
+              <label class="basket-item"><span class="check-wrap"><input class="basket-check" type="checkbox" checked data-price="130"><span class="check-ui"></span></span><span class="item-emoji">🫧</span><span class="item-copy"><strong>Dishwashing Liquid</strong><small>Likely to run out soon</small></span><span class="item-price">₹130</span></label>
+            </div>
+            <div class="basket-summary">
+              <div class="summary-line total"><span>Basket Total</span><strong id="basketTotal">₹575</strong></div>
+              <div class="summary-line"><span>Weekly Budget Remaining</span><strong id="budgetRemaining">₹1,120</strong></div>
+              <p class="summary-message" id="budgetMessage">✓ You're comfortably within budget.</p>
+            </div>
+          </div>
+
+          <div class="recommend-card reveal">
+            <p class="eyebrow">Thoughtful recommendations</p>
+            <h3>Anything else you're forgetting?</h3>
+            <p>Based on your usual basket—not on pushing you to spend more.</p>
+            <div class="target-row"><span>Current basket <b id="currentBasket">₹575</b></span><span>Typical basket ₹650</span></div>
+            <div class="target-progress" aria-label="Basket progress toward typical basket size"><span id="targetProgress"></span></div>
+            <div id="targetMessage">₹75 away from your typical basket size</div>
+            <div class="recs">
+              <div class="rec-item" data-name="Butter" data-price="58" data-emoji="🧈"><span class="item-emoji">🧈</span><span class="rec-copy"><strong>Butter — ₹58</strong><small>Usually purchased with bread</small></span><button class="add-btn" type="button">+ Add</button></div>
+              <div class="rec-item" data-name="Curd" data-price="45" data-emoji="🥣"><span class="item-emoji">🥣</span><span class="rec-copy"><strong>Curd — ₹45</strong><small>Part of your regular dairy basket</small></span><button class="add-btn" type="button">+ Add</button></div>
+              <div class="rec-item" data-name="Apples" data-price="89" data-emoji="🍎"><span class="item-emoji">🍎</span><span class="rec-copy"><strong>Apples — ₹89</strong><small>No fruit purchased this week</small></span><button class="add-btn" type="button">+ Add</button></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="insights" aria-labelledby="insights-title">
+      <div class="shell">
+        <div class="section-head reveal">
+          <p class="eyebrow">Smart insights</p>
+          <h2 id="insights-title">Your groceries finally <span class="text-green">make sense.</span></h2>
+          <p class="lede">See the habits hiding inside everyday orders—what repeats, what gets forgotten and where your money actually goes.</p>
+        </div>
+        <div class="insights-layout">
+          <div class="analytics-card reveal">
+            <div class="analytics-head"><h3>Spending overview</h3><span class="period">This week⌄</span></div>
+            <div class="spend-row">
+              <div class="spend-number"><span>Weekly Spend</span><strong>₹3,840</strong><small>↓ 8% vs last week</small></div>
+              <div class="bars" aria-label="Seven-day spending chart"><i class="bar" style="--h:38%"></i><i class="bar" style="--h:58%"></i><i class="bar" style="--h:34%"></i><i class="bar" style="--h:72%"></i><i class="bar" style="--h:52%"></i><i class="bar" style="--h:86%"></i><i class="bar" style="--h:64%"></i></div>
+            </div>
+            <div class="metric-grid">
+              <div class="metric"><span>Most Purchased</span><strong>🥛 Dairy</strong></div>
+              <div class="metric"><span>Frequently Forgotten</span><strong>🫧 Dishwashing Liquid</strong></div>
+              <div class="metric"><span>Typical Milk Refill</span><strong>Every 6.5 days</strong></div>
+              <div class="metric saving"><span>Potential Saving</span><strong>₹1,250/month</strong></div>
+            </div>
+          </div>
+          <div class="right-insights">
+            <div class="roast-card reveal">
+              <p class="eyebrow">GrocIQ has thoughts</p>
+              <h3>Friendly budget roast.</h3>
+              <p class="roast-message" id="roastMessage" aria-live="polite">You spent ₹620 on chips this month. That's 3× your fruit spending 👀</p>
+              <button class="btn btn-lime roast-btn" type="button" id="roastBtn">Roast My Spending <span aria-hidden="true">↻</span></button>
+            </div>
+            <div class="nutrition-card reveal">
+              <div class="nutrition-head"><div><h3>Kitchen nutrition</h3><p>Understand what's entering your kitchen—not just what's leaving your wallet.</p></div><span class="pill">Weekly view</span></div>
+              <div class="macro-row"><div class="macro"><strong>382g</strong><span>Protein</span></div><div class="macro"><strong>1,120g</strong><span>Carbs</span></div><div class="macro"><strong>310g</strong><span>Fat</span></div><div class="macro"><strong>9,420</strong><span>Calories</span></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="future-section" aria-labelledby="future-title">
+      <div class="shell future-card reveal">
+        <div>
+          <p class="eyebrow">The future journey</p>
+          <h2 id="future-title">From reminder to doorstep.</h2>
+          <p>GrocIQ's long-term vision connects prediction and planning with your preferred grocery-delivery experience.</p>
+        </div>
+        <div>
+          <div class="commerce-flow" aria-label="Future grocery order flow">
+            <div class="commerce-step"><div class="commerce-icon">◔</div><strong>Running low</strong></div><span class="commerce-arrow">→</span>
+            <div class="commerce-step"><div class="commerce-icon">✦</div><strong>GrocIQ predicts</strong></div><span class="commerce-arrow">→</span>
+            <div class="commerce-step"><div class="commerce-icon">🧺</div><strong>Smart Basket</strong></div><span class="commerce-arrow">→</span>
+            <div class="commerce-step"><div class="commerce-icon">⌂</div><strong>Delivery partner</strong></div>
+          </div>
+          <div class="future-partners"><span class="future-label">Future integrations</span><div class="partner-list"><span>Blinkit</span><span>Zepto</span><span>Swiggy Instamart</span><span>BigBasket</span></div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section waitlist-section" id="waitlist" aria-labelledby="waitlist-title">
+      <div class="shell waitlist-wrap reveal">
+        <div class="waitlist-copy">
+          <p class="eyebrow">Early access</p>
+          <h2 id="waitlist-title">Your grocery list is about to get smarter.</h2>
+          <p class="lede">Join the GrocIQ early-access waitlist.</p>
+        </div>
+        <form class="waitlist-form" id="waitlistForm">
+          <div class="field"><label for="name">Name</label><input id="name" name="name" type="text" autocomplete="name" placeholder="Your name" required></div>
+          <div class="field"><label for="email">Email</label><input id="email" name="email" type="email" autocomplete="email" placeholder="Email address" required></div>
+          <div class="field"><label for="interest">What interests you most?</label><select id="interest" name="interest" required><option value="" disabled selected>What interests you most?</option><option>Grocery Reminders</option><option>Automatic Shopping Lists</option><option>Budget Tracking</option><option>Spending Insights</option><option>Nutrition</option><option>Everything</option></select></div>
+          <button class="btn" type="submit">Join the Waitlist <span aria-hidden="true">→</span></button>
+        </form>
+        <p class="waitlist-error" id="waitlistError" role="alert" aria-live="polite"></p>
+        <div class="success-state" id="successState" role="status" aria-live="polite"><div class="success-icon">🎉</div><h3>You're in.</h3><p>We'll let you know when GrocIQ is ready for your kitchen.</p></div>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="faq-title">
+      <div class="shell">
+        <div class="section-head center reveal"><p class="eyebrow">Questions, answered</p><h2 id="faq-title">The short version.</h2></div>
+        <div class="faq-list reveal">
+          <details><summary>Do I have to manually add every grocery?</summary><p>Initially, yes. Future versions may explore receipt scanning and order-history integrations.</p></details>
+          <details><summary>How does GrocIQ know when something will run out?</summary><p>It learns from purchase frequency and consumption patterns, then surfaces a prediction for you to review.</p></details>
+          <details><summary>Can I order groceries through GrocIQ?</summary><p>Not currently. Grocery-delivery integrations are part of the future vision.</p></details>
+          <details><summary>Is GrocIQ only for budgeting?</summary><p>No. GrocIQ combines grocery tracking, predictive refills, recurring purchases, Smart Basket recommendations, spending insights and nutrition tracking.</p></details>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="shell footer-grid">
+      <div class="footer-brand"><a class="logo" href="#top"><span class="logo-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M6 5h12l-1.1 11H7.1L6 5Z" stroke="currentColor" stroke-width="2"/><path d="M9 5a3 3 0 0 1 6 0" stroke="currentColor" stroke-width="2"/></svg></span>GrocIQ</a><p>Your groceries. Your budget. Always in sync.</p></div>
+      <div class="footer-note"><span>Future grocery-delivery integrations.</span><span>© 2026 GrocIQ</span></div>
+    </div>
+  </footer>
+
+  <a class="btn mobile-cta" id="mobileCta" href="#waitlist">Join Waitlist <span aria-hidden="true">→</span></a>
+
+  <script>
+    (() => {
+      const money = value => `₹${value.toLocaleString('en-IN')}`;
+      const basketItems = document.getElementById('basketItems');
+      const totalEl = document.getElementById('basketTotal');
+      const currentEl = document.getElementById('currentBasket');
+      const countEl = document.getElementById('selectedCount');
+      const remainingEl = document.getElementById('budgetRemaining');
+      const budgetMessage = document.getElementById('budgetMessage');
+      const targetProgress = document.getElementById('targetProgress');
+      const targetMessage = document.getElementById('targetMessage');
+      const weeklyAllowance = 1695;
+      const target = 650;
+
+      function updateBasket() {
+        const checks = [...document.querySelectorAll('.basket-check')];
+        const checked = checks.filter(check => check.checked);
+        const total = checked.reduce((sum, check) => sum + Number(check.dataset.price), 0);
+        checks.forEach(check => check.closest('.basket-item').classList.toggle('is-off', !check.checked));
+        totalEl.textContent = money(total);
+        currentEl.textContent = money(total);
+        countEl.textContent = checked.length;
+        remainingEl.textContent = money(Math.max(0, weeklyAllowance - total));
+        budgetMessage.textContent = total <= weeklyAllowance ? "✓ You're comfortably within budget." : "This basket is above your weekly grocery budget.";
+        const difference = target - total;
+        targetProgress.style.width = `${Math.min(100, Math.max(4, total / target * 100))}%`;
+        targetMessage.textContent = difference > 0 ? `${money(difference)} away from your typical basket size` : difference === 0 ? 'This matches your typical basket size' : `${money(Math.abs(difference))} above your typical basket size`;
+        totalEl.classList.add('bump');
+        window.setTimeout(() => totalEl.classList.remove('bump'), 220);
+      }
+
+      basketItems.addEventListener('change', event => {
+        if (event.target.matches('.basket-check')) updateBasket();
+      });
+
+      document.querySelectorAll('.add-btn').forEach(button => {
+        button.addEventListener('click', () => {
+          const rec = button.closest('.rec-item');
+          const { name, price, emoji } = rec.dataset;
+          const item = document.createElement('label');
+          item.className = 'basket-item pop';
+          item.innerHTML = `<span class="check-wrap"><input class="basket-check" type="checkbox" checked data-price="${price}"><span class="check-ui"></span></span><span class="item-emoji">${emoji}</span><span class="item-copy"><strong>${name}</strong><small>Added from smart recommendations</small></span><span class="item-price">₹${price}</span>`;
+          basketItems.appendChild(item);
+          rec.classList.add('is-added');
+          button.textContent = '✓ Added';
+          button.disabled = true;
+          updateBasket();
+        });
+      });
+
+      const roasts = [
+        "You spent ₹620 on chips this month. That's 3× your fruit spending 👀",
+        'Third ice cream order this week. Your freezer is doing better than your budget.',
+        '₹940 on snacks this week. Impressive commitment.',
+        'Fruit: ₹210. Snacks: ₹860. We noticed. 👀'
+      ];
+      let roastIndex = 0;
+      const roastMessage = document.getElementById('roastMessage');
+      document.getElementById('roastBtn').addEventListener('click', () => {
+        roastMessage.classList.add('changing');
+        window.setTimeout(() => {
+          roastIndex = (roastIndex + 1) % roasts.length;
+          roastMessage.textContent = roasts[roastIndex];
+          roastMessage.classList.remove('changing');
+        }, 180);
+      });
+
+      const SUPABASE_URL = 'https://egfpgdidwkhvzpqieifm.supabase.co';
+      const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_tZIGML9U3-violaZIWph6A_0gczIO5z';
+      const form = document.getElementById('waitlistForm');
+      const submitButton = form.querySelector('button[type="submit"]');
+      const waitlistError = document.getElementById('waitlistError');
+      form.addEventListener('submit', async event => {
+        event.preventDefault();
+        if (!form.reportValidity()) return;
+
+        const originalButtonContent = submitButton.innerHTML;
+        submitButton.disabled = true;
+        submitButton.textContent = 'Joining…';
+        waitlistError.classList.remove('show');
+
+        try {
+          const response = await fetch(`${SUPABASE_URL}/rest/v1/waitlist`, {
+            method: 'POST',
+            headers: {
+              apikey: SUPABASE_PUBLISHABLE_KEY,
+              'Content-Type': 'application/json',
+              Prefer: 'return=minimal'
+            },
+            body: JSON.stringify({
+              name: form.elements.name.value.trim(),
+              email: form.elements.email.value.trim().toLowerCase(),
+              interest: form.elements.interest.value
+            })
+          });
+
+          if (!response.ok) {
+            const error = await response.json().catch(() => ({}));
+            if (error.code !== '23505') throw new Error(error.message || 'Unable to join the waitlist.');
+            document.querySelector('#successState h3').textContent = "You're already in.";
+          }
+
+          form.style.display = 'none';
+          waitlistError.classList.remove('show');
+          document.getElementById('successState').classList.add('show');
+        } catch (error) {
+          console.error('Waitlist submission failed:', error);
+          waitlistError.textContent = 'Something went wrong. Please try again in a moment.';
+          waitlistError.classList.add('show');
+          submitButton.disabled = false;
+          submitButton.innerHTML = originalButtonContent;
+        }
+      });
+
+      const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const reveals = document.querySelectorAll('.reveal');
+      if (reduceMotion || !('IntersectionObserver' in window)) {
+        reveals.forEach(el => el.classList.add('is-visible'));
+      } else {
+        const observer = new IntersectionObserver(entries => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('is-visible');
+              observer.unobserve(entry.target);
+            }
+          });
+        }, { threshold: .12 });
+        reveals.forEach(el => observer.observe(el));
+      }
+
+      const mobileCta = document.getElementById('mobileCta');
+      const hero = document.querySelector('.hero');
+      const waitlist = document.getElementById('waitlist');
+      function toggleMobileCta() {
+        const pastHero = window.scrollY > hero.offsetHeight * .72;
+        const atWaitlist = window.scrollY + window.innerHeight > waitlist.offsetTop + 80;
+        mobileCta.classList.toggle('show', pastHero && !atWaitlist);
+      }
+      window.addEventListener('scroll', toggleMobileCta, { passive: true });
+      toggleMobileCta();
+    })();
+  </script>
+</body>
+</html>

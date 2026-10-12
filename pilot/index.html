@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f7f4e9">
+  <meta name="description" content="GrocIQ private pilot for couples: a shared grocery memory, useful refill checks, and an honest household budget.">
+  <title>GrocIQ — Shared kitchen pilot</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./styles.css">
+  <script type="module" src="./js/app.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand"><span class="brand-mark" aria-hidden="true">G</span><span>GrocIQ</span><span class="pilot-badge">Private pilot</span></div>
+      <a class="public-link" href="/">Visit the public site <span aria-hidden="true">↗</span></a>
+    </header>
+
+    <main id="main">
+      <section class="intro" aria-labelledby="intro-title">
+        <div class="intro-copy">
+          <p class="eyebrow">A calmer way to shop together</p>
+          <h1 id="intro-title">A shared kitchen memory <em>for two.</em></h1>
+          <p>Know what your partner bought, what may need a refill, and what your next order could cost—before you check out.</p>
+        </div>
+        <div class="intro-art" aria-hidden="true">
+          <div class="art-orbit orbit-one"></div><div class="art-orbit orbit-two"></div>
+          <div class="art-card card-left"><span>01</span><strong>Remember</strong><small>What came home</small></div>
+          <div class="art-card card-main"><span class="art-icon">✓</span><strong>Shop with clarity</strong><small>Together, even when apart</small></div>
+          <div class="art-card card-right"><span>02</span><strong>Check</strong><small>What comes next</small></div>
+        </div>
+      </section>
+
+      <div id="service-status" class="service-status" role="status" aria-live="polite">Checking pilot availability…</div>
+
+      <div class="workspace" aria-label="GrocIQ pilot workspace">
+        <nav class="workspace-nav" aria-label="Pilot sections">
+          <button type="button" class="nav-tab is-active" data-view="home" aria-current="page">Overview</button>
+          <button type="button" class="nav-tab" data-view="groceries">Groceries</button>
+          <button type="button" class="nav-tab" data-view="purchase">Record a purchase</button>
+          <button type="button" class="nav-tab" data-view="check">Pre-order check</button>
+          <button type="button" class="nav-tab" data-view="budget">Budget</button>
+        </nav>
+
+        <div class="workspace-body">
+          <section id="view-home" class="view is-visible" aria-labelledby="home-title">
+            <div class="view-heading"><div><p class="eyebrow">Your household</p><h2 id="home-title">Start with what you know.</h2></div><span class="state-pill">No household data yet</span></div>
+            <div class="card-grid">
+              <article class="feature-card accent-card"><span class="feature-icon" aria-hidden="true">↗</span><h3>Pick up where they left off</h3><p>Recent confirmed purchases and who updated them will live here, so neither partner has to reconstruct the week.</p><button type="button" class="text-action" data-open="groceries">See groceries <span aria-hidden="true">→</span></button></article>
+              <article class="feature-card"><span class="feature-icon" aria-hidden="true">＋</span><h3>Remember the last shop</h3><p>Record a purchase manually or review a receipt before it changes your shared picture.</p><button type="button" class="text-action" data-open="purchase">Record a purchase <span aria-hidden="true">→</span></button></article>
+              <article class="feature-card"><span class="feature-icon" aria-hidden="true">✓</span><h3>Check before checkout</h3><p>See only relevant refill ideas, with your budget in view. You decide what belongs in the order.</p><button type="button" class="text-action" data-open="check">Run a check <span aria-hidden="true">→</span></button></article>
+            </div>
+          </section>
+
+          <section id="view-groceries" class="view" aria-labelledby="groceries-title" hidden>
+            <div class="view-heading"><div><p class="eyebrow">Shared groceries</p><h2 id="groceries-title">One list. Two people in the loop.</h2></div></div>
+            <div class="empty-card"><span class="empty-icon" aria-hidden="true">◌</span><h3>Nothing confirmed yet</h3><p>Your shared list, estimated availability, and latest partner updates will appear here after your household is connected.</p></div>
+          </section>
+
+          <section id="view-purchase" class="view" aria-labelledby="purchase-title" hidden>
+            <div class="view-heading"><div><p class="eyebrow">Purchase history</p><h2 id="purchase-title">Make the last shop count.</h2></div></div>
+            <div class="empty-card"><span class="empty-icon" aria-hidden="true">＋</span><h3>Purchases need a final review</h3><p>Both manual entries and receipts will show a review step before anything changes your groceries or spending.</p></div>
+          </section>
+
+          <section id="view-check" class="view" aria-labelledby="check-title" hidden>
+            <div class="view-heading"><div><p class="eyebrow">Before you order</p><h2 id="check-title">One last useful check.</h2></div></div>
+            <div class="empty-card"><span class="empty-icon" aria-hidden="true">✓</span><h3>No filler. No automatic additions.</h3><p>When your household is connected, GrocIQ will surface supported needs and show the projected budget effect. You remain in control.</p></div>
+          </section>
+
+          <section id="view-budget" class="view" aria-labelledby="budget-title" hidden>
+            <div class="view-heading"><div><p class="eyebrow">Household budget</p><h2 id="budget-title">See the real cost of a shop.</h2></div></div>
+            <div class="empty-card"><span class="empty-icon" aria-hidden="true">$</span><h3>No budget set</h3><p>Confirmed purchases will count the paid total, including fees and tips. Draft baskets will stay separate until a purchase is confirmed.</p></div>
+          </section>
+        </div>
+      </div>
+    </main>
+    <footer><span>GrocIQ</span><p>Your groceries. Your budget. Always in sync.</p><p class="footer-note">Privacy and deletion support will be available to pilot households.</p></footer>
+  </div>
+</body>
+</html>

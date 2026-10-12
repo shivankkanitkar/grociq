@@ -24,10 +24,13 @@ test('incomplete project configuration fails closed', () => {
   assert.equal(resolvePilotConfig('grociq.vercel.app', { 'grociq.vercel.app': { url: '', key: '' } }), null);
 });
 
-test('live configuration includes only local test hosts, never the public waitlist or an unknown preview', () => {
+test('live configuration includes the exact test-branch alias but never production or an unknown preview', () => {
   assert.equal(resolvePilotConfig('127.0.0.1')?.url, 'https://njaoyeiuericdxaqpghm.supabase.co');
   assert.equal(resolvePilotConfig('localhost')?.url, 'https://njaoyeiuericdxaqpghm.supabase.co');
   assert.equal(resolvePilotConfig('localhost')?.emailCodesReady, false);
+  assert.equal(resolvePilotConfig('grociq-git-feat-us-couples-pilot-shivankkanitkar2027-9139.vercel.app')?.url, 'https://njaoyeiuericdxaqpghm.supabase.co');
+  assert.equal(resolvePilotConfig('grociq-git-feat-us-couples-pilot-shivankkanitkar2027-9139.vercel.app')?.emailCodesReady, false);
   assert.equal(resolvePilotConfig('grociq.vercel.app'), null);
-  assert.equal(Object.keys(pilotProjects).length, 2);
+  assert.equal(resolvePilotConfig('grociq-2z61tu8cd-shivankkanitkar2027-9139.vercel.app'), null);
+  assert.equal(Object.keys(pilotProjects).length, 3);
 });

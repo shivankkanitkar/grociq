@@ -12,7 +12,7 @@ The separate `/pilot/` page is for a two-person US household. It points only to 
 
 The pilot code now includes a shared grocery list, reviewed manual purchases, a monthly USD budget and an optional pre-order check. It uses confirmed purchases for spending, keeps unknown fees unknown, and does not place grocery orders. A receipt/OCR flow and a real two-person browser journey are still pending. **Do not enter real household or receipt data yet.**
 
-Six-digit email sign-in is intentionally disabled in the test-page configuration while the owner pauses email-provider setup. Supabase now requires custom SMTP to customize a new free project's template for codes. When the owner is ready, configure and test a sending domain and provider, switch `emailCodesReady` in `pilot/js/config.js`, and verify two separate accounts. Do not enable sign-in just by changing that flag before the provider test passes.
+Six-digit email sign-in is intentionally disabled in the test-page configuration until custom SMTP and an email template are tested. Supabase requires custom SMTP to customize a new free project's template for codes. The exact Vercel test-branch alias is connected to the isolated test project, but email sign-in remains disabled. Configure and test a sending domain and provider, then switch `emailCodesReady` in `pilot/js/config.js` and verify two separate accounts. Do not enable sign-in just by changing that flag before the provider test passes.
 
 Unknown Vercel hostnames fail closed. The pilot is not wired to a production Supabase project or approved for a real-couple launch. GitHub-to-Vercel deployment serves static files only; database migrations and service configuration must be applied separately under the release approval gates.
 

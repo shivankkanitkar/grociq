@@ -9,8 +9,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./styles.css">
-  <script type="module" src="./js/app.js"></script>
+  <link rel="stylesheet" href="./styles.css?v=20261012d">
+  <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3/dist/umd/supabase.min.js"></script>
+  <script type="module" src="./js/app.js?v=20261012e"></script>
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
@@ -37,7 +38,30 @@
 
       <div id="service-status" class="service-status" role="status" aria-live="polite">Checking pilot availability…</div>
 
-      <div class="workspace" aria-label="GrocIQ pilot workspace">
+      <section id="access-panel" class="access-panel" aria-labelledby="access-title" hidden>
+        <div class="access-copy"><p class="eyebrow">Private early access</p><h2 id="access-title">Your kitchen, shared with your person.</h2><p>Sign in with a one-time email code. Only invited pilot households can create or join a shared space.</p><span class="privacy-note">Your groceries stay private to your household.</span></div>
+        <div class="access-form-card">
+          <p id="email-setup-note" class="setup-note" role="status" hidden>Email-code sign-in is being set up. This private pilot is not open yet.</p>
+          <form id="email-form"><label for="account-email">Email address</label><input id="account-email" name="email" type="email" autocomplete="email" required placeholder="you@example.com"><button class="primary-button" type="submit">Email me a code <span aria-hidden="true">→</span></button></form>
+          <form id="code-form" hidden><label for="account-code">Six-digit code</label><input id="account-code" name="code" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" autocomplete="one-time-code" required placeholder="000000"><button class="primary-button" type="submit">Verify and continue</button><button id="change-email" class="quiet-button" type="button">Use another email</button></form>
+          <p id="auth-status" class="form-status" role="status" aria-live="polite"></p>
+        </div>
+      </section>
+
+      <section id="household-panel" class="household-panel" aria-labelledby="household-title" hidden>
+        <div class="view-heading"><div><p class="eyebrow">You are signed in</p><h2 id="household-title">Make a space for two.</h2><p id="signed-in-as" class="subtle-copy"></p></div><button id="sign-out" type="button" class="outline-button">Sign out</button></div>
+        <div class="onboarding-grid">
+          <form id="create-household-form" class="onboarding-card"><span class="step-number">01 / START</span><h3>Create your household</h3><p>Give your shared kitchen a name. Your timezone keeps spending in the right month.</p><label for="household-name">Household name</label><input id="household-name" required maxlength="80" placeholder="Our kitchen"><label for="household-timezone">Timezone</label><input id="household-timezone" required placeholder="America/New_York"><button type="submit" class="primary-button">Create household</button></form>
+          <form id="join-household-form" class="onboarding-card"><span class="step-number">02 / JOIN</span><h3>Joining your partner?</h3><p>Paste the private invitation code they shared with you. It expires after 48 hours.</p><label for="invite-token">Invitation code</label><input id="invite-token" required autocomplete="off" placeholder="Paste your invitation code"><button type="submit" class="outline-button">Join household</button></form>
+        </div>
+        <p id="household-status" class="form-status" role="status" aria-live="polite"></p>
+      </section>
+
+      <section id="member-bar" class="member-bar" hidden><div><span class="member-dot" aria-hidden="true"></span><strong id="active-household-name">Your household</strong><small id="member-summary"></small></div><div class="member-actions"><button id="refresh-household" type="button" class="quiet-button">Refresh</button><button id="invite-partner" type="button" class="outline-button">Invite partner</button><button id="member-sign-out" type="button" class="quiet-button">Sign out</button></div></section>
+      <p id="member-status" class="form-status" role="status" aria-live="polite" hidden></p>
+      <section id="invite-panel" class="invite-panel" hidden aria-labelledby="invite-title"><div><p class="eyebrow">The second seat</p><h3 id="invite-title">Bring your partner in.</h3><p>Only the matching verified email can use the private, 48-hour invitation. Share it yourself through a channel you trust.</p></div><form id="invite-form"><label for="partner-email">Partner email</label><div class="inline-form"><input id="partner-email" type="email" autocomplete="email" required placeholder="partner@example.com"><button type="submit" class="primary-button">Create invite</button></div></form><div id="invite-result" hidden><label for="invite-link">Private invite link</label><div class="inline-form"><input id="invite-link" readonly><button id="copy-invite" type="button" class="outline-button">Copy link</button></div><p>Creating a new invite revokes the previous one.</p></div><div class="invite-actions"><button id="revoke-invite" type="button" class="quiet-button">Revoke current invite</button></div><p id="invite-status" class="form-status" role="status" aria-live="polite"></p></section>
+
+      <div class="workspace" aria-label="GrocIQ pilot workspace" hidden>
         <nav class="workspace-nav" aria-label="Pilot sections">
           <button type="button" class="nav-tab is-active" data-view="home" aria-current="page">Overview</button>
           <button type="button" class="nav-tab" data-view="groceries">Groceries</button>
@@ -50,33 +74,50 @@
           <section id="view-home" class="view is-visible" aria-labelledby="home-title">
             <div class="view-heading"><div><p class="eyebrow">Your household</p><h2 id="home-title">Start with what you know.</h2></div><span class="state-pill">No household data yet</span></div>
             <div class="card-grid">
-              <article class="feature-card accent-card"><span class="feature-icon" aria-hidden="true">↗</span><h3>Pick up where they left off</h3><p>Recent confirmed purchases and who updated them will live here, so neither partner has to reconstruct the week.</p><button type="button" class="text-action" data-open="groceries">See groceries <span aria-hidden="true">→</span></button></article>
-              <article class="feature-card"><span class="feature-icon" aria-hidden="true">＋</span><h3>Remember the last shop</h3><p>Record a purchase manually or review a receipt before it changes your shared picture.</p><button type="button" class="text-action" data-open="purchase">Record a purchase <span aria-hidden="true">→</span></button></article>
+              <article class="feature-card accent-card"><span class="feature-icon" aria-hidden="true">↗</span><h3>Pick up where they left off</h3><p>See the latest confirmed grocery states and who updated them, so neither partner has to reconstruct the week.</p><button type="button" class="text-action" data-open="groceries">See groceries <span aria-hidden="true">→</span></button></article>
+              <article class="feature-card"><span class="feature-icon" aria-hidden="true">＋</span><h3>Remember the last shop</h3><p>Record and review a manual purchase before it changes your shared picture and spending.</p><button type="button" class="text-action" data-open="purchase">Record a purchase <span aria-hidden="true">→</span></button></article>
               <article class="feature-card"><span class="feature-icon" aria-hidden="true">✓</span><h3>Check before checkout</h3><p>See only relevant refill ideas, with your budget in view. You decide what belongs in the order.</p><button type="button" class="text-action" data-open="check">Run a check <span aria-hidden="true">→</span></button></article>
             </div>
           </section>
 
           <section id="view-groceries" class="view" aria-labelledby="groceries-title" hidden>
-            <div class="view-heading"><div><p class="eyebrow">Shared groceries</p><h2 id="groceries-title">One list. Two people in the loop.</h2></div></div>
-            <div class="empty-card"><span class="empty-icon" aria-hidden="true">◌</span><h3>Nothing confirmed yet</h3><p>Your shared list, estimated availability, and latest partner updates will appear here after your household is connected.</p></div>
+            <div class="view-heading"><div><p class="eyebrow">Shared groceries</p><h2 id="groceries-title">One list. Two people in the loop.</h2><p class="subtle-copy">A partner's latest confirmation is separate from GrocIQ's future estimates.</p></div></div>
+            <form id="add-item-form" class="inline-form add-item-form"><label for="new-item-name">Add something to remember</label><input id="new-item-name" required maxlength="100" placeholder="e.g. Milk"><label class="checkbox-label"><input id="new-item-essential" type="checkbox"> Essential</label><button type="submit" class="primary-button">Add to list</button></form>
+            <p id="item-status" class="form-status" role="status" aria-live="polite"></p>
+            <div id="grocery-list" class="record-list"><div class="empty-card"><span class="empty-icon" aria-hidden="true">◌</span><h3>Nothing on the list yet</h3><p>Add the first grocery you and your partner want to remember.</p></div></div>
           </section>
 
           <section id="view-purchase" class="view" aria-labelledby="purchase-title" hidden>
-            <div class="view-heading"><div><p class="eyebrow">Purchase history</p><h2 id="purchase-title">Make the last shop count.</h2></div></div>
-            <div class="empty-card"><span class="empty-icon" aria-hidden="true">＋</span><h3>Purchases need a final review</h3><p>Both manual entries and receipts will show a review step before anything changes your groceries or spending.</p></div>
+            <div class="view-heading"><div><p class="eyebrow">Purchase history</p><h2 id="purchase-title">Make the last shop count.</h2><p class="subtle-copy">Manual purchases are saved only after you review the all-in paid total. Receipt upload is not enabled yet.</p></div></div>
+            <form id="purchase-form" class="purchase-form">
+              <div class="form-grid"><div><label for="purchase-merchant">Store or service</label><input id="purchase-merchant" required maxlength="100" placeholder="e.g. Neighborhood Market"></div><div><label for="purchase-date">Purchase date</label><input id="purchase-date" type="date" required></div></div>
+              <div class="form-heading"><h3>What came home?</h3><button id="add-purchase-line" type="button" class="outline-button">Add item</button></div>
+              <div id="purchase-lines" class="purchase-lines"></div>
+              <div class="form-grid amount-grid"><div><label for="purchase-discount">Item discount ($)</label><input id="purchase-discount" inputmode="decimal" placeholder="0.00" value="0"></div><div><label for="purchase-delivery">Delivery ($)</label><input id="purchase-delivery" inputmode="decimal" placeholder="Unknown if blank"></div><div><label for="purchase-service">Service fees ($)</label><input id="purchase-service" inputmode="decimal" placeholder="Unknown if blank"></div><div><label for="purchase-tax">Tax ($)</label><input id="purchase-tax" inputmode="decimal" placeholder="Unknown if blank"></div><div><label for="purchase-tip">Tip ($)</label><input id="purchase-tip" inputmode="decimal" placeholder="Unknown if blank"></div><div><label for="purchase-paid">All-in amount paid ($)</label><input id="purchase-paid" inputmode="decimal" required placeholder="Required to confirm"></div></div>
+              <p class="form-explainer">Blank fees mean unknown, not $0. Item prices minus the entered discount make the groceries subtotal. Your confirmed paid total is what counts toward spending.</p>
+              <button type="submit" class="primary-button">Review and save purchase</button>
+            </form>
+            <div id="purchase-conflict" class="conflict-card" hidden><h3>Could this be the same shop?</h3><p>We found a purchase with the same date, store, paid total and an overlapping item. Choose how to handle it; nothing has been saved yet.</p><div id="conflict-candidates"></div><button id="save-distinct" type="button" class="outline-button">This was a separate shop</button></div>
+            <p id="purchase-status" class="form-status" role="status" aria-live="polite"></p>
+            <h3 class="history-heading">Recent confirmed purchases</h3><div id="purchase-history" class="record-list"></div>
           </section>
 
           <section id="view-check" class="view" aria-labelledby="check-title" hidden>
-            <div class="view-heading"><div><p class="eyebrow">Before you order</p><h2 id="check-title">One last useful check.</h2></div></div>
-            <div class="empty-card"><span class="empty-icon" aria-hidden="true">✓</span><h3>No filler. No automatic additions.</h3><p>When your household is connected, GrocIQ will surface supported needs and show the projected budget effect. You remain in control.</p></div>
+            <div class="view-heading"><div><p class="eyebrow">Before you order</p><h2 id="check-title">One last useful check.</h2><p class="subtle-copy">Use this alongside your usual grocery app. Nothing is added to an order or saved as spending here.</p></div></div>
+            <form id="check-form" class="check-form"><div class="form-grid"><div><label for="basket-groceries">Groceries already in your basket ($)</label><input id="basket-groceries" inputmode="decimal" required placeholder="e.g. 43.00"></div><div><label for="basket-threshold">Retailer threshold ($, optional)</label><input id="basket-threshold" inputmode="decimal" placeholder="e.g. 50.00"></div></div><details><summary>Known delivery, fees, tax or tip</summary><div class="form-grid amount-grid"><div><label for="basket-delivery">Delivery ($)</label><input id="basket-delivery" inputmode="decimal" placeholder="Unknown if blank"></div><div><label for="basket-service">Service fees ($)</label><input id="basket-service" inputmode="decimal" placeholder="Unknown if blank"></div><div><label for="basket-tax">Tax ($)</label><input id="basket-tax" inputmode="decimal" placeholder="Unknown if blank"></div><div><label for="basket-tip">Tip ($)</label><input id="basket-tip" inputmode="decimal" placeholder="Unknown if blank"></div></div></details><button type="submit" class="primary-button">Check my basket</button></form>
+            <div id="check-results" hidden><div id="check-summary" class="check-summary"></div><h3>Anything useful you might be forgetting?</h3><p class="subtle-copy">These are based on your list, household confirmations or a dated purchase pattern—not a target basket size.</p><div id="suggestion-list" class="record-list"></div><p id="check-footnote" class="form-explainer">Retailer thresholds and delivery charges are user-entered estimates. GrocIQ cannot verify eligibility or place an order.</p></div>
+            <p id="check-status" class="form-status" role="status" aria-live="polite"></p>
           </section>
 
           <section id="view-budget" class="view" aria-labelledby="budget-title" hidden>
-            <div class="view-heading"><div><p class="eyebrow">Household budget</p><h2 id="budget-title">See the real cost of a shop.</h2></div></div>
-            <div class="empty-card"><span class="empty-icon" aria-hidden="true">$</span><h3>No budget set</h3><p>Confirmed purchases will count the paid total, including fees and tips. Draft baskets will stay separate until a purchase is confirmed.</p></div>
+            <div class="view-heading"><div><p class="eyebrow">Household budget</p><h2 id="budget-title">See the real cost of a shop.</h2><p class="subtle-copy">The month follows your household timezone. Only confirmed paid totals count.</p></div></div>
+            <div id="budget-summary" class="budget-summary"><div class="empty-card"><h3>No budget set</h3><p>Set a monthly allowance to compare it with confirmed spending.</p></div></div>
+            <form id="budget-form" class="budget-form"><label for="monthly-allowance">Monthly household allowance ($)</label><div class="inline-form"><input id="monthly-allowance" inputmode="decimal" required placeholder="e.g. 600.00"><button type="submit" class="primary-button">Save monthly budget</button></div></form>
+            <p id="budget-status" class="form-status" role="status" aria-live="polite"></p>
           </section>
         </div>
       </div>
+      <section id="privacy-panel" class="privacy-panel" hidden><h2>Privacy and leaving</h2><p>Only active members of your household can see its shared information. If you leave, your access ends immediately; information you both recorded remains for your partner. For a deletion request, contact the pilot founder through the channel where you received your invitation.</p><button id="leave-household" type="button" class="outline-button">Leave this household</button></section>
     </main>
     <footer><span>GrocIQ</span><p>Your groceries. Your budget. Always in sync.</p><p class="footer-note">Privacy and deletion support will be available to pilot households.</p></footer>
   </div>

@@ -45,7 +45,7 @@ test('returning partner can see shared data and choose a useful basket addition'
   await mockSignedInHousehold(page);
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/pilot/');
-  await expect(page.getByText('Our kitchen')).toBeVisible();
+  await expect(page.getByText('Our kitchen', { exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Groceries', exact: true }).click();
   await expect(page.locator('#grocery-list')).toContainText('Milk');
   await page.getByRole('button', { name: 'Budget', exact: true }).click();

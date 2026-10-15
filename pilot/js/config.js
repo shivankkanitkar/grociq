@@ -7,6 +7,7 @@ const testProject = Object.freeze({
 export const pilotProjects = Object.freeze({
   '127.0.0.1': testProject,
   'localhost': testProject,
+  'grociq-git-feat-grociq-app-shivankkanitkar2027-9139.vercel.app': testProject,
   'grociq-git-feat-us-couples-pilot-shivankkanitkar2027-9139.vercel.app': testProject
 });
 

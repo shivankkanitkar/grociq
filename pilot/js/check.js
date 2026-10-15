@@ -28,9 +28,18 @@ export function refillSuggestions(data, today, timezone) {
     const lastPurchase = bought.at(-1) || null;
     const lastStatusDate = item.availability_at ? localDate(item.availability_at, timezone) : null;
     const statusCurrent = lastStatusDate && (!lastPurchase || dayNumber(lastStatusDate) >= dayNumber(lastPurchase.date));
+    const stockDate = item.quantity_confirmed_at ? localDate(item.quantity_confirmed_at, timezone) : null;
+    const stockCurrent = stockDate && (!lastPurchase || dayNumber(stockDate) >= dayNumber(lastPurchase.date));
+    const onHand = item.quantity_on_hand == null ? null : Number(item.quantity_on_hand);
+    const refillAt = item.refill_at == null ? null : Number(item.refill_at);
     let reason = null;
     let priority = 10;
-    if (item.availability === 'finished' && statusCurrent) { reason = 'Marked finished by your household'; priority = 0; }
+    if (stockCurrent && onHand === 0) { reason = 'Confirmed out of stock'; priority = 0; }
+    else if (item.availability === 'finished' && statusCurrent) { reason = 'Marked finished by your household'; priority = 0; }
+    else if (stockCurrent && onHand != null && refillAt != null && onHand <= refillAt) {
+      reason = `About ${onHand} ${item.quantity_unit || 'units'} left; your refill point is ${refillAt}`;
+      priority = 1;
+    }
     else if (item.availability === 'low' && statusCurrent) { reason = 'Marked running low by your household'; priority = 1; }
     else if (item.requested) { reason = 'On your shared next list'; priority = 2; }
     else if (cadence && lastPurchase) {

@@ -1,8 +1,9 @@
 import { resolvePilotConfig } from './config.js?v=20261012';
-import { createPilotClient, sendEmailCode, verifyEmailCode, loadMembership, createHousehold, acceptInvite, createInvite, revokeInvite, leaveHousehold, inviteLink } from './auth.js';
+import { createPilotClient, signInWithGoogle, loadMembership, createHousehold, acceptInvite, createInvite, revokeInvite, leaveHousehold, inviteLink } from './auth.js';
 import { cents, dollars, purchasePayload, loadGroceries, addItem, saveItemState, savePurchase, voidPurchase } from './groceries.js';
 import { householdToday, monthStart, weeklyGuidance, loadBudget, saveBudget } from './budget.js';
 import { refillSuggestions, checkBasket } from './check.js';
+import { validateReceiptFile, receiptTextDraft } from './receipts.js';
 
 const $ = (selector) => document.querySelector(selector);
 const serviceStatus = $('#service-status');
@@ -102,7 +103,7 @@ function renderItems() {
   list.replaceChildren();
   if (!groceryData.items.length) {
     const empty = element('div', 'empty-card');
-    empty.append(element('h3', '', 'Nothing on the list yet'), element('p', '', 'Add the first grocery you and your partner want to remember.'));
+    empty.append(element('h3', '', 'Nothing on the list yet'), element('p', '', 'Add the first grocery you want to remember.'));
     list.append(empty);
     return;
   }
@@ -112,6 +113,9 @@ function renderItems() {
     info.append(element('strong', '', item.name), element('small', '', item.availability_at
       ? `Availability confirmed by ${partnerName(item.availability_by)} · ${new Date(item.availability_at).toLocaleString()}`
       : 'Availability not confirmed yet'));
+    if (item.quantity_on_hand != null) {
+      info.append(element('small', 'stock-note', `${Number(item.quantity_on_hand)} ${item.quantity_unit || 'units'} at home · last checked ${item.quantity_confirmed_at ? new Date(item.quantity_confirmed_at).toLocaleDateString() : 'recently'}`));
+    }
     const controls = element('div', 'item-controls');
     const select = element('select');
     select.setAttribute('aria-label', `${item.name} availability`);
@@ -127,14 +131,36 @@ function renderItems() {
     const essentialLabel = element('label', 'checkbox-label', 'Essential');
     const essential = element('input'); essential.type = 'checkbox'; essential.checked = item.essential;
     essentialLabel.prepend(essential);
+    const stockFields = element('div', 'stock-fields');
+    const quantityLabel = element('label', '', 'At home');
+    const quantity = element('input'); quantity.type = 'number'; quantity.min = '0'; quantity.step = '0.01';
+    quantity.placeholder = 'Unknown'; quantity.value = item.quantity_on_hand ?? '';
+    quantity.setAttribute('aria-label', `${item.name} quantity at home`);
+    quantityLabel.append(quantity);
+    const unitLabel = element('label', '', 'Unit');
+    const unit = element('input'); unit.maxLength = 20; unit.placeholder = 'e.g. pack'; unit.value = item.quantity_unit ?? '';
+    unit.setAttribute('aria-label', `${item.name} quantity unit`);
+    unitLabel.append(unit);
+    const refillLabel = element('label', '', 'Refill at');
+    const refill = element('input'); refill.type = 'number'; refill.min = '0'; refill.step = '0.01';
+    refill.placeholder = 'Optional'; refill.value = item.refill_at ?? '';
+    refill.setAttribute('aria-label', `${item.name} refill point`);
+    refillLabel.append(refill);
+    stockFields.append(quantityLabel, unitLabel, refillLabel);
     const button = element('button', 'outline-button', 'Save update'); button.type = 'submit';
-    controls.append(select, requestedLabel, essentialLabel, button);
+    controls.append(select, requestedLabel, essentialLabel, stockFields, button);
     card.append(info, controls);
     card.addEventListener('submit', async (event) => {
       event.preventDefault(); button.disabled = true;
       try {
-        await saveItemState(client, item, { availability: select.value, requested: requested.checked, essential: essential.checked });
-        setStatus($('#item-status'), `${item.name} updated for both partners.`);
+        if ((quantity.value || refill.value) && !unit.value.trim()) throw new Error('Add a unit when tracking quantity, such as packs or bottles.');
+        await saveItemState(client, item, {
+          availability: select.value, requested: requested.checked, essential: essential.checked,
+          quantityOnHand: quantity.value === '' ? null : Number(quantity.value),
+          quantityUnit: unit.value.trim() || null,
+          refillAt: refill.value === '' ? null : Number(refill.value)
+        });
+        setStatus($('#item-status'), `${item.name} updated for your household.`);
         await refreshHousehold();
       } catch (error) {
         setStatus($('#item-status'), error.message || 'Could not save this update.', true);
@@ -149,7 +175,7 @@ function renderPurchases() {
   history.replaceChildren();
   if (!groceryData.purchases.length) {
     const empty = element('div', 'empty-card');
-    empty.append(element('h3', '', 'No purchases confirmed yet'), element('p', '', 'Your reviewed purchases will appear here for both partners.'));
+    empty.append(element('h3', '', 'No purchases confirmed yet'), element('p', '', 'Your reviewed purchases will appear here for your household.'));
     history.append(empty);
     return;
   }
@@ -363,7 +389,8 @@ async function refreshHousehold() {
     }
     $('#active-household-name').textContent = household.name;
     const partnerCount = household.members.length;
-    $('#member-summary').textContent = `${partnerCount} of 2 partners · Last refreshed ${lastRefresh.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}`;
+    const rhythm = { 7: 'Weekly', 14: 'Every two weeks', 30: 'Monthly' }[household.shopping_cycle_days] || 'Weekly';
+    $('#member-summary').textContent = `${partnerCount === 1 ? 'Just you' : 'Shopping together'} · ${rhythm} shop · Refreshed ${lastRefresh.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}`;
     $('#invite-partner').hidden = partnerCount >= 2;
     showOnly('workspace');
     await refreshGroceries();
@@ -419,6 +446,46 @@ function resetPurchaseForm() {
   $('#purchase-form button[type="submit"]').textContent = 'Review and save purchase';
 }
 
+async function loadOcr() {
+  if (window.Tesseract) return window.Tesseract;
+  await new Promise((resolve, reject) => {
+    const script = document.createElement('script');
+    script.src = 'https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js';
+    script.onload = resolve;
+    script.onerror = () => reject(new Error('The scanner could not load. Please enter this purchase manually.'));
+    document.head.append(script);
+  });
+  if (!window.Tesseract) throw new Error('The scanner is unavailable. Please enter this purchase manually.');
+  return window.Tesseract;
+}
+
+$('#receipt-image').addEventListener('change', async (event) => {
+  const file = event.target.files?.[0];
+  if (!file) return;
+  const status = $('#scan-status');
+  setStatus(status, 'Reading the receipt on your device…');
+  try {
+    const header = new Uint8Array(await file.slice(0, 8).arrayBuffer());
+    validateReceiptFile(file, header);
+    const ocr = await loadOcr();
+    const worker = await ocr.createWorker('eng');
+    let text;
+    try { text = (await worker.recognize(file)).data.text; }
+    finally { await worker.terminate(); }
+    const draft = receiptTextDraft(text);
+    resetPurchaseForm();
+    $('#purchase-merchant').value = draft.merchant;
+    $('#purchase-date').value = draft.date || $('#purchase-date').value;
+    $('#purchase-paid').value = draft.paid;
+    $('#purchase-lines').replaceChildren();
+    for (const line of draft.lines) addPurchaseRow(line);
+    if (!draft.lines.length) addPurchaseRow();
+    setStatus(status, 'Scan complete. Review all fields, add anything missing, then save. The photo stays on your device.');
+  } catch (error) {
+    setStatus(status, error.message || 'Could not read this receipt. Enter the purchase manually.', true);
+  } finally { event.target.value = ''; }
+});
+
 async function commitPurchase(options = {}) {
   const { payload, operationId } = pendingPurchase;
   const result = await savePurchase(client, payload, operationId, options);
@@ -442,7 +509,7 @@ async function commitPurchase(options = {}) {
   }
   if (result?.status !== 'saved') throw new Error('Purchase was not saved. Please try again.');
   resetPurchaseForm();
-  setStatus($('#purchase-status'), 'Purchase confirmed. Both partners can now see it, and its paid total counts toward spending.');
+  setStatus($('#purchase-status'), 'Purchase confirmed. It is visible to your household, and its paid total counts toward spending.');
   await refreshHousehold();
 }
 
@@ -479,7 +546,7 @@ $('#add-item-form').addEventListener('submit', async (event) => {
   try {
     await addItem(client, $('#new-item-name').value, $('#new-item-essential').checked);
     $('#add-item-form').reset();
-    setStatus($('#item-status'), 'Added to your shared list.');
+    setStatus($('#item-status'), 'Added to your grocery list.');
     await refreshHousehold();
   } catch (error) { setStatus($('#item-status'), error.message || 'Could not add item.', true); }
   finally { button.disabled = false; }
@@ -490,7 +557,7 @@ $('#budget-form').addEventListener('submit', async (event) => {
   try {
     const allowance = cents($('#monthly-allowance').value);
     await saveBudget(client, currentMonth(), allowance, budgetData?.revision);
-    setStatus($('#budget-status'), 'Monthly budget updated for both partners.');
+    setStatus($('#budget-status'), 'Monthly budget updated for your household.');
     await refreshBudget();
   } catch (error) { setStatus($('#budget-status'), error.message || 'Could not save budget.', true); }
   finally { button.disabled = false; }
@@ -529,41 +596,23 @@ async function handle(form, statusNode, action, successMessage) {
   }
 }
 
-$('#email-form').addEventListener('submit', async (event) => {
-  event.preventDefault();
-  if (!config?.emailCodesReady) return;
-  const email = $('#account-email').value;
-  const sent = await handle(event.currentTarget, $('#auth-status'), async () => {
-    await sendEmailCode(client, email);
-    return true;
-  }, 'Check your email for a six-digit code.');
-  if (sent) {
-    $('#email-form').hidden = true;
-    $('#code-form').hidden = false;
-    $('#account-code').focus();
+$('#google-sign-in').addEventListener('click', async () => {
+  if (!config?.googleReady) return;
+  const button = $('#google-sign-in');
+  button.disabled = true;
+  setStatus($('#auth-status'), 'Opening Google sign-in…');
+  try {
+    await signInWithGoogle(client, `${window.location.origin}/app/${window.location.search}`);
+  } catch (error) {
+    setStatus($('#auth-status'), error.message || 'Could not open Google sign-in.', true);
+    button.disabled = false;
   }
-});
-
-$('#code-form').addEventListener('submit', async (event) => {
-  event.preventDefault();
-  const verified = await handle(event.currentTarget, $('#auth-status'),
-    () => verifyEmailCode(client, $('#account-email').value, $('#account-code').value),
-    'Signed in. Opening your household…');
-  if (verified) await refreshHousehold();
-});
-
-$('#change-email').addEventListener('click', () => {
-  $('#code-form').hidden = true;
-  $('#email-form').hidden = false;
-  $('#account-code').value = '';
-  setStatus($('#auth-status'), '');
-  $('#account-email').focus();
 });
 
 $('#create-household-form').addEventListener('submit', async (event) => {
   event.preventDefault();
   const created = await handle(event.currentTarget, $('#household-status'),
-    () => createHousehold(client, $('#household-name').value, $('#household-timezone').value),
+    () => createHousehold(client, $('#household-name').value, $('#household-timezone').value, $('#shopping-cycle').value),
     'Household created. Opening your shared space…');
   if (created) await refreshHousehold();
 });
@@ -632,9 +681,6 @@ async function signOut() {
   await client.auth.signOut();
   currentUser = null;
   clearPrivateState();
-  $('#code-form').hidden = true;
-  $('#email-form').hidden = false;
-  $('#account-code').value = '';
   showOnly('access');
 }
 
@@ -650,17 +696,16 @@ setInterval(() => {
 
 if (!config) {
   serviceStatus.dataset.state = 'unavailable';
-  serviceStatus.textContent = 'The private pilot is not available on this address yet. The public waitlist is still open.';
+  serviceStatus.textContent = 'GrocIQ is not available on this address yet.';
 } else {
   try {
     client = createPilotClient(config, window.supabase);
-    if (!config.emailCodesReady) {
+    if (!config.googleReady) {
       $('#email-setup-note').hidden = false;
-      $('#account-email').disabled = true;
-      $('#email-form button[type="submit"]').disabled = true;
+      $('#google-sign-in').disabled = true;
     }
     serviceStatus.dataset.state = 'ready';
-    serviceStatus.textContent = 'Connecting to your private pilot…';
+    serviceStatus.textContent = 'Connecting to GrocIQ…';
     refreshHousehold();
   } catch (error) {
     serviceStatus.dataset.state = 'unavailable';

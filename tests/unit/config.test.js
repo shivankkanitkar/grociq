@@ -8,11 +8,11 @@ const approvedHosts = {
 };
 
 test('exact approved production hostname selects production only', () => {
-  assert.deepEqual(resolvePilotConfig('grociq.vercel.app', approvedHosts), { ...approvedHosts['grociq.vercel.app'], emailCodesReady: false });
+  assert.deepEqual(resolvePilotConfig('grociq.vercel.app', approvedHosts), { ...approvedHosts['grociq.vercel.app'], googleReady: false });
 });
 
 test('exact preview hostname selects test only', () => {
-  assert.deepEqual(resolvePilotConfig('pilot-preview.example.test', approvedHosts), { ...approvedHosts['pilot-preview.example.test'], emailCodesReady: false });
+  assert.deepEqual(resolvePilotConfig('pilot-preview.example.test', approvedHosts), { ...approvedHosts['pilot-preview.example.test'], googleReady: false });
 });
 
 test('unknown and deceptive hostnames fail closed', () => {
@@ -27,9 +27,9 @@ test('incomplete project configuration fails closed', () => {
 test('live configuration includes the exact test-branch alias but never production or an unknown preview', () => {
   assert.equal(resolvePilotConfig('127.0.0.1')?.url, 'https://njaoyeiuericdxaqpghm.supabase.co');
   assert.equal(resolvePilotConfig('localhost')?.url, 'https://njaoyeiuericdxaqpghm.supabase.co');
-  assert.equal(resolvePilotConfig('localhost')?.emailCodesReady, false);
+  assert.equal(resolvePilotConfig('localhost')?.googleReady, false);
   assert.equal(resolvePilotConfig('grociq-git-feat-us-couples-pilot-shivankkanitkar2027-9139.vercel.app')?.url, 'https://njaoyeiuericdxaqpghm.supabase.co');
-  assert.equal(resolvePilotConfig('grociq-git-feat-us-couples-pilot-shivankkanitkar2027-9139.vercel.app')?.emailCodesReady, false);
+  assert.equal(resolvePilotConfig('grociq-git-feat-us-couples-pilot-shivankkanitkar2027-9139.vercel.app')?.googleReady, false);
   assert.equal(resolvePilotConfig('grociq.vercel.app'), null);
   assert.equal(resolvePilotConfig('grociq-2z61tu8cd-shivankkanitkar2027-9139.vercel.app'), null);
   assert.equal(Object.keys(pilotProjects).length, 3);

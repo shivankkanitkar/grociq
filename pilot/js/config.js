@@ -2,7 +2,7 @@
 const testProject = Object.freeze({
   url: 'https://njaoyeiuericdxaqpghm.supabase.co',
   key: 'sb_publishable_5GJLs6D90g-DNvHiJWJZYQ_4hdV7MB1',
-  emailCodesReady: false
+  googleReady: false
 });
 export const pilotProjects = Object.freeze({
   '127.0.0.1': testProject,
@@ -15,5 +15,5 @@ export function resolvePilotConfig(hostname, projects = pilotProjects) {
   const project = projects[hostname];
   if (!project || typeof project.url !== 'string' || typeof project.key !== 'string') return null;
   if (!/^https:\/\/[a-z0-9-]+\.supabase\.co\/?$/i.test(project.url) || !project.key.trim()) return null;
-  return { url: project.url, key: project.key, emailCodesReady: project.emailCodesReady === true };
+  return { url: project.url, key: project.key, googleReady: project.googleReady === true };
 }

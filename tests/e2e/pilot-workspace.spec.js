@@ -8,7 +8,7 @@ async function mockSignedInHousehold(page) {
     const purchaseId = '33333333-3333-4333-8333-333333333333';
     const itemId = '44444444-4444-4444-8444-444444444444';
     const rows = {
-      households: [{ id: householdId, name: 'Our kitchen', timezone: 'America/New_York', revision: 1 }],
+      households: [{ id: householdId, name: 'Our kitchen', timezone: 'America/New_York', shopping_cycle_days: 7, revision: 1 }],
       household_members: [{ user_id: userId, email: 'pilot@example.test', joined_at: new Date().toISOString() }],
       grocery_items: [{ id: itemId, household_id: householdId, name: 'Milk', essential: true, requested: true,
         availability: 'low', availability_at: new Date().toISOString(), availability_by: userId, revision: 1 }],
@@ -44,7 +44,7 @@ async function mockSignedInHousehold(page) {
 test('returning partner can see shared data and choose a useful basket addition', async ({ page }) => {
   await mockSignedInHousehold(page);
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto('/pilot/');
+  await page.goto('/app/');
   await expect(page.getByText('Our kitchen', { exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Groceries', exact: true }).click();
   await expect(page.locator('#grocery-list')).toContainText('Milk');

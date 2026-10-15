@@ -1,8 +1,13 @@
 export function createPilotClient(config, sdk) {
   if (!config || !sdk?.createClient) throw new Error('Pilot sign-in is unavailable. Please try again later.');
   return sdk.createClient(config.url, config.key, {
-    auth: { autoRefreshToken: true, persistSession: true, detectSessionInUrl: false }
+    auth: { autoRefreshToken: true, persistSession: true, detectSessionInUrl: true }
   });
+}
+
+export async function signInWithGoogle(client, redirectTo) {
+  const { error } = await client.auth.signInWithOAuth({ provider: 'google', options: { redirectTo } });
+  if (error) throw error;
 }
 
 export async function sendEmailCode(client, email) {
@@ -23,7 +28,7 @@ export async function loadMembership(client) {
   if (idError) throw idError;
   if (!householdId) return null;
   const [householdResult, memberResult] = await Promise.all([
-    client.from('households').select('id,name,timezone,created_at,revision').eq('id', householdId).single(),
+    client.from('households').select('id,name,timezone,shopping_cycle_days,created_at,revision').eq('id', householdId).single(),
     client.from('household_members').select('user_id,email,joined_at').eq('household_id', householdId)
   ]);
   if (householdResult.error) throw householdResult.error;
@@ -31,8 +36,10 @@ export async function loadMembership(client) {
   return { ...householdResult.data, members: memberResult.data };
 }
 
-export async function createHousehold(client, name, timezone) {
-  const { data, error } = await client.rpc('create_pilot_household', { p_name: name, p_timezone: timezone });
+export async function createHousehold(client, name, timezone, shoppingCycleDays = 7) {
+  const { data, error } = await client.rpc('create_household', {
+    p_name: name, p_timezone: timezone, p_shopping_cycle_days: Number(shoppingCycleDays)
+  });
   if (error) throw error;
   return data;
 }
@@ -60,5 +67,5 @@ export async function leaveHousehold(client) {
 }
 
 export function inviteLink(origin, token) {
-  return `${origin}/pilot/?invite=${encodeURIComponent(token)}`;
+  return `${origin}/app/?invite=${encodeURIComponent(token)}`;
 }

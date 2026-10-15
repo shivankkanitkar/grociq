@@ -4,65 +4,65 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#f7f4e9">
-  <meta name="description" content="GrocIQ private pilot for couples: a shared grocery memory, useful refill checks, and an honest household budget.">
-  <title>GrocIQ — Shared kitchen pilot</title>
+  <meta name="description" content="GrocIQ helps busy households track groceries, plan refills and stay on top of spending.">
+  <title>GrocIQ — Your grocery home base</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./styles.css?v=20261012d">
+  <link rel="stylesheet" href="../pilot/styles.css?v=20261013a">
   <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3/dist/umd/supabase.min.js"></script>
-  <script type="module" src="./js/app.js?v=20261012e"></script>
+  <script type="module" src="../pilot/js/app.js?v=20261013a"></script>
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
   <div class="app-shell">
     <header class="topbar">
-      <div class="brand"><span class="brand-mark" aria-hidden="true">G</span><span>GrocIQ</span><span class="pilot-badge">Private pilot</span></div>
+      <div class="brand"><span class="brand-mark" aria-hidden="true">G</span><span>GrocIQ</span><span class="pilot-badge">Your grocery home base</span></div>
       <a class="public-link" href="/">Visit the public site <span aria-hidden="true">↗</span></a>
     </header>
 
     <main id="main">
       <section class="intro" aria-labelledby="intro-title">
         <div class="intro-copy">
-          <p class="eyebrow">A calmer way to shop together</p>
-          <h1 id="intro-title">A shared kitchen memory <em>for two.</em></h1>
-          <p>Know what your partner bought, what may need a refill, and what your next order could cost—before you check out.</p>
+          <p class="eyebrow">A calmer way to stay stocked</p>
+          <h1 id="intro-title">Your kitchen, <em>under control.</em></h1>
+          <p>Keep track of what you bought, what needs a refill and what the next shop could cost—whether you live solo or shop with a partner.</p>
         </div>
         <div class="intro-art" aria-hidden="true">
           <div class="art-orbit orbit-one"></div><div class="art-orbit orbit-two"></div>
           <div class="art-card card-left"><span>01</span><strong>Remember</strong><small>What came home</small></div>
-          <div class="art-card card-main"><span class="art-icon">✓</span><strong>Shop with clarity</strong><small>Together, even when apart</small></div>
+          <div class="art-card card-main"><span class="art-icon">✓</span><strong>Shop with clarity</strong><small>On your own or together</small></div>
           <div class="art-card card-right"><span>02</span><strong>Check</strong><small>What comes next</small></div>
         </div>
       </section>
 
-      <div id="service-status" class="service-status" role="status" aria-live="polite">Checking pilot availability…</div>
+      <div id="service-status" class="service-status" role="status" aria-live="polite">Connecting to GrocIQ…</div>
 
       <section id="access-panel" class="access-panel" aria-labelledby="access-title" hidden>
-        <div class="access-copy"><p class="eyebrow">Private early access</p><h2 id="access-title">Your kitchen, shared with your person.</h2><p>Sign in with a one-time email code. Only invited pilot households can create or join a shared space.</p><span class="privacy-note">Your groceries stay private to your household.</span></div>
+        <div class="access-copy"><p class="eyebrow">Your grocery space</p><h2 id="access-title">Less guessing. Better grocery days.</h2><p>Sign in to keep one clear view of your groceries and spending. Start on your own, or invite the person you shop with.</p><span class="privacy-note">Your grocery records stay private to your household.</span></div>
         <div class="access-form-card">
-          <p id="email-setup-note" class="setup-note" role="status" hidden>Email-code sign-in is being set up. This private pilot is not open yet.</p>
-          <form id="email-form"><label for="account-email">Email address</label><input id="account-email" name="email" type="email" autocomplete="email" required placeholder="you@example.com"><button class="primary-button" type="submit">Email me a code <span aria-hidden="true">→</span></button></form>
-          <form id="code-form" hidden><label for="account-code">Six-digit code</label><input id="account-code" name="code" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" autocomplete="one-time-code" required placeholder="000000"><button class="primary-button" type="submit">Verify and continue</button><button id="change-email" class="quiet-button" type="button">Use another email</button></form>
+          <p id="email-setup-note" class="setup-note" role="status" hidden>Google sign-in is being connected. Your grocery space will open soon.</p>
+          <button id="google-sign-in" class="primary-button" type="button">Continue with Google <span aria-hidden="true">→</span></button>
+          <p class="form-explainer">GrocIQ only requests your name and email for your account. It cannot read your Gmail or grocery orders.</p>
           <p id="auth-status" class="form-status" role="status" aria-live="polite"></p>
         </div>
       </section>
 
       <section id="household-panel" class="household-panel" aria-labelledby="household-title" hidden>
-        <div class="view-heading"><div><p class="eyebrow">You are signed in</p><h2 id="household-title">Make a space for two.</h2><p id="signed-in-as" class="subtle-copy"></p></div><button id="sign-out" type="button" class="outline-button">Sign out</button></div>
+        <div class="view-heading"><div><p class="eyebrow">You are signed in</p><h2 id="household-title">Make this kitchen yours.</h2><p id="signed-in-as" class="subtle-copy"></p></div><button id="sign-out" type="button" class="outline-button">Sign out</button></div>
         <div class="onboarding-grid">
-          <form id="create-household-form" class="onboarding-card"><span class="step-number">01 / START</span><h3>Create your household</h3><p>Give your shared kitchen a name. Your timezone keeps spending in the right month.</p><label for="household-name">Household name</label><input id="household-name" required maxlength="80" placeholder="Our kitchen"><label for="household-timezone">Timezone</label><input id="household-timezone" required placeholder="America/New_York"><button type="submit" class="primary-button">Create household</button></form>
-          <form id="join-household-form" class="onboarding-card"><span class="step-number">02 / JOIN</span><h3>Joining your partner?</h3><p>Paste the private invitation code they shared with you. It expires after 48 hours.</p><label for="invite-token">Invitation code</label><input id="invite-token" required autocomplete="off" placeholder="Paste your invitation code"><button type="submit" class="outline-button">Join household</button></form>
+          <form id="create-household-form" class="onboarding-card"><span class="step-number">01 / START</span><h3>Create your grocery space</h3><p>Use it solo or invite a partner later. Choose the rhythm that best fits your shopping.</p><label for="household-name">Name your space</label><input id="household-name" required maxlength="80" placeholder="My kitchen"><label for="shopping-cycle">How often do you usually shop?</label><select id="shopping-cycle" required><option value="7">About once a week</option><option value="14">About every two weeks</option><option value="30">About once a month</option></select><label for="household-timezone">Timezone</label><input id="household-timezone" required placeholder="America/New_York"><button type="submit" class="primary-button">Create my space</button></form>
+          <form id="join-household-form" class="onboarding-card"><span class="step-number">02 / JOIN</span><h3>Sharing groceries?</h3><p>Paste the private invitation code from your partner. It expires after 48 hours.</p><label for="invite-token">Invitation code</label><input id="invite-token" required autocomplete="off" placeholder="Paste your invitation code"><button type="submit" class="outline-button">Join their space</button></form>
         </div>
         <p id="household-status" class="form-status" role="status" aria-live="polite"></p>
       </section>
 
       <section id="member-bar" class="member-bar" hidden><div><span class="member-dot" aria-hidden="true"></span><strong id="active-household-name">Your household</strong><small id="member-summary"></small></div><div class="member-actions"><button id="refresh-household" type="button" class="quiet-button">Refresh</button><button id="invite-partner" type="button" class="outline-button">Invite partner</button><button id="member-sign-out" type="button" class="quiet-button">Sign out</button></div></section>
       <p id="member-status" class="form-status" role="status" aria-live="polite" hidden></p>
-      <section id="invite-panel" class="invite-panel" hidden aria-labelledby="invite-title"><div><p class="eyebrow">The second seat</p><h3 id="invite-title">Bring your partner in.</h3><p>Only the matching verified email can use the private, 48-hour invitation. Share it yourself through a channel you trust.</p></div><form id="invite-form"><label for="partner-email">Partner email</label><div class="inline-form"><input id="partner-email" type="email" autocomplete="email" required placeholder="partner@example.com"><button type="submit" class="primary-button">Create invite</button></div></form><div id="invite-result" hidden><label for="invite-link">Private invite link</label><div class="inline-form"><input id="invite-link" readonly><button id="copy-invite" type="button" class="outline-button">Copy link</button></div><p>Creating a new invite revokes the previous one.</p></div><div class="invite-actions"><button id="revoke-invite" type="button" class="quiet-button">Revoke current invite</button></div><p id="invite-status" class="form-status" role="status" aria-live="polite"></p></section>
+      <section id="invite-panel" class="invite-panel" hidden aria-labelledby="invite-title"><div><p class="eyebrow">Shop together</p><h3 id="invite-title">Bring your partner in.</h3><p>Only the matching verified email can use the private, 48-hour invitation. Share it yourself through a channel you trust.</p></div><form id="invite-form"><label for="partner-email">Partner email</label><div class="inline-form"><input id="partner-email" type="email" autocomplete="email" required placeholder="partner@example.com"><button type="submit" class="primary-button">Create invite</button></div></form><div id="invite-result" hidden><label for="invite-link">Private invite link</label><div class="inline-form"><input id="invite-link" readonly><button id="copy-invite" type="button" class="outline-button">Copy link</button></div><p>Creating a new invite revokes the previous one.</p></div><div class="invite-actions"><button id="revoke-invite" type="button" class="quiet-button">Revoke current invite</button></div><p id="invite-status" class="form-status" role="status" aria-live="polite"></p></section>
 
-      <div class="workspace" aria-label="GrocIQ pilot workspace" hidden>
-        <nav class="workspace-nav" aria-label="Pilot sections">
+      <div class="workspace" aria-label="GrocIQ workspace" hidden>
+        <nav class="workspace-nav" aria-label="GrocIQ sections">
           <button type="button" class="nav-tab is-active" data-view="home" aria-current="page">Overview</button>
           <button type="button" class="nav-tab" data-view="groceries">Groceries</button>
           <button type="button" class="nav-tab" data-view="purchase">Record a purchase</button>
@@ -81,14 +81,15 @@
           </section>
 
           <section id="view-groceries" class="view" aria-labelledby="groceries-title" hidden>
-            <div class="view-heading"><div><p class="eyebrow">Shared groceries</p><h2 id="groceries-title">One list. Two people in the loop.</h2><p class="subtle-copy">A partner's latest confirmation is separate from GrocIQ's future estimates.</p></div></div>
+            <div class="view-heading"><div><p class="eyebrow">Your groceries</p><h2 id="groceries-title">Your kitchen, clearly in view.</h2><p class="subtle-copy">Track what is at home, set a refill point, or share updates with a partner.</p></div></div>
             <form id="add-item-form" class="inline-form add-item-form"><label for="new-item-name">Add something to remember</label><input id="new-item-name" required maxlength="100" placeholder="e.g. Milk"><label class="checkbox-label"><input id="new-item-essential" type="checkbox"> Essential</label><button type="submit" class="primary-button">Add to list</button></form>
             <p id="item-status" class="form-status" role="status" aria-live="polite"></p>
             <div id="grocery-list" class="record-list"><div class="empty-card"><span class="empty-icon" aria-hidden="true">◌</span><h3>Nothing on the list yet</h3><p>Add the first grocery you and your partner want to remember.</p></div></div>
           </section>
 
           <section id="view-purchase" class="view" aria-labelledby="purchase-title" hidden>
-            <div class="view-heading"><div><p class="eyebrow">Purchase history</p><h2 id="purchase-title">Make the last shop count.</h2><p class="subtle-copy">Manual purchases are saved only after you review the all-in paid total. Receipt upload is not enabled yet.</p></div></div>
+            <div class="view-heading"><div><p class="eyebrow">Purchase history</p><h2 id="purchase-title">Make the last shop count.</h2><p class="subtle-copy">Enter purchases manually, or scan a receipt photo on your device. Always review the all-in paid total before saving.</p></div></div>
+            <div class="scan-card"><div><strong>Have a receipt photo?</strong><p>Try a JPEG or PNG. Text is read on this device; the image is not uploaded or stored. Please check every suggested field.</p></div><label class="outline-button" for="receipt-image">Scan receipt photo</label><input id="receipt-image" type="file" accept="image/jpeg,image/png" capture="environment" hidden><p id="scan-status" class="form-status" role="status" aria-live="polite"></p></div>
             <form id="purchase-form" class="purchase-form">
               <div class="form-grid"><div><label for="purchase-merchant">Store or service</label><input id="purchase-merchant" required maxlength="100" placeholder="e.g. Neighborhood Market"></div><div><label for="purchase-date">Purchase date</label><input id="purchase-date" type="date" required></div></div>
               <div class="form-heading"><h3>What came home?</h3><button id="add-purchase-line" type="button" class="outline-button">Add item</button></div>
@@ -117,9 +118,9 @@
           </section>
         </div>
       </div>
-      <section id="privacy-panel" class="privacy-panel" hidden><h2>Privacy and leaving</h2><p>Only active members of your household can see its shared information. If you leave, your access ends immediately; information you both recorded remains for your partner. For a deletion request, contact the pilot founder through the channel where you received your invitation.</p><button id="leave-household" type="button" class="outline-button">Leave this household</button></section>
+      <section id="privacy-panel" class="privacy-panel" hidden><h2>Privacy and leaving</h2><p>Only active members of your household can see its shared information. If you leave, your access ends immediately; information you both recorded remains for your partner. Contact GrocIQ support to request deletion of your records.</p><button id="leave-household" type="button" class="outline-button">Leave this household</button></section>
     </main>
-    <footer><span>GrocIQ</span><p>Your groceries. Your budget. Always in sync.</p><p class="footer-note">Privacy and deletion support will be available to pilot households.</p></footer>
+    <footer><span>GrocIQ</span><p>Your groceries. Your budget. Always in sync.</p></footer>
   </div>
 </body>
 </html>

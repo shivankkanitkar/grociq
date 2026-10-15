@@ -14,6 +14,33 @@ export function validateReceiptFile(file, header) {
   throw new Error('Use a JPEG or PNG receipt image. Other files can be entered manually.');
 }
 
+// Conservative US receipt-text extraction. Ambiguous values remain blank for review.
+export function receiptTextDraft(rawText) {
+  const rows = String(rawText || '').split(/\r?\n/).map(line => line.trim()).filter(Boolean);
+  if (!rows.length) throw new Error('No readable text was found. Enter this purchase manually.');
+  const merchant = rows.find(line => /[a-z]{3}/i.test(line) && !/^(receipt|thank you|date|total|subtotal)/i.test(line))?.slice(0, 100) || '';
+  const dateText = rows.join(' ').match(/\b(\d{1,2})[/-](\d{1,2})[/-](20\d{2})\b/);
+  let date = '';
+  if (dateText) {
+    const month = Number(dateText[1]); const day = Number(dateText[2]); const year = Number(dateText[3]);
+    const candidate = new Date(Date.UTC(year, month - 1, day));
+    if (candidate.getUTCFullYear() === year && candidate.getUTCMonth() === month - 1 && candidate.getUTCDate() === day) {
+      date = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    }
+  }
+  const totalCandidates = rows.filter(line => /\b(total|amount paid|balance due)\b/i.test(line) && !/sub\s?total/i.test(line));
+  const totalLine = totalCandidates.at(-1) || '';
+  const totalMatch = totalLine.match(/\$?\s?(\d{1,5}[.,]\d{2})\s*$/);
+  const paid = totalMatch ? totalMatch[1].replace(',', '.') : '';
+  const lines = rows.flatMap(row => {
+    if (/\b(sub\s?total|total|tax|change|cash|card|visa|mastercard|date|receipt|savings|discount|balance|payment)\b/i.test(row)) return [];
+    const match = row.match(/^(.{3,80}?)\s+\$?(\d{1,5}[.,]\d{2})\s*$/);
+    if (!match || !/[a-z]/i.test(match[1])) return [];
+    return [{ name: match[1].replace(/^\d+\s+/, '').trim().slice(0, 100), quantity: '1', price: match[2].replace(',', '.') }];
+  }).slice(0, 40);
+  return { merchant, date, paid, lines };
+}
+
 function fieldText(field) {
   return String(field?.valueString ?? field?.valueDate ?? '').trim();
 }

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { cents, dollars, purchasePayload } from '../../pilot/js/groceries.js';
+import { cents, dollars, purchasePayload, saveItemState } from '../../pilot/js/groceries.js';
 
 test('currency input uses exact cents and never rounds a float', () => {
   assert.equal(cents('12.05'), 1205);
@@ -24,4 +24,18 @@ test('a reviewed shop keeps unknown fees unknown and one paid total', () => {
   assert.equal(incomplete.tax_cents, null);
   assert.throws(() => purchasePayload({ merchant: 'Market', date: '2026-10-12', paid: '81',
     delivery: '5' }, [{ name: 'Groceries', quantity: '1', price: '80' }]));
+});
+
+test('stock update keeps quantity and refill point in the shared record', async () => {
+  const client = { async rpc(name, args) {
+    assert.equal(name, 'set_grocery_details');
+    assert.equal(args.p_quantity_on_hand, 2);
+    assert.equal(args.p_quantity_unit, 'cartons');
+    assert.equal(args.p_refill_at, 1);
+    return { data: 3, error: null };
+  } };
+  assert.equal(await saveItemState(client, { id: 'milk', revision: 2 }, {
+    availability: 'available', requested: false, essential: true,
+    quantityOnHand: 2, quantityUnit: 'cartons', refillAt: 1
+  }), 3);
 });

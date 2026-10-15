@@ -1,6 +1,14 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { receiptReviewDraft, validateReceiptFile } from '../../pilot/js/receipts.js';
+import { receiptReviewDraft, receiptTextDraft, validateReceiptFile } from '../../pilot/js/receipts.js';
+
+test('receipt text creates only editable suggestions', () => {
+  const draft = receiptTextDraft('FRESH MARKET\n10/12/2026\nMILK 2% 4.29\nBANANAS 1.79\nSUBTOTAL 6.08\nTAX 0.00\nTOTAL $6.08');
+  assert.deepEqual(draft, { merchant: 'FRESH MARKET', date: '2026-10-12', paid: '6.08', lines: [
+    { name: 'MILK 2%', quantity: '1', price: '4.29' },
+    { name: 'BANANAS', quantity: '1', price: '1.79' }
+  ] });
+});
 
 test('a synthetic receipt becomes an editable, unconfirmed draft', () => {
   const result = receiptReviewDraft({ analyzeResult: { documents: [{ docType: 'receipt', fields: {

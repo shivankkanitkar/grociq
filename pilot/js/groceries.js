@@ -73,9 +73,11 @@ export async function addItem(client, name, essential) {
 }
 
 export async function saveItemState(client, item, state) {
-  const { data, error } = await client.rpc('set_grocery_state', {
+  const { data, error } = await client.rpc('set_grocery_details', {
     p_item_id: item.id, p_expected_revision: item.revision,
-    p_availability: state.availability, p_requested: state.requested, p_essential: state.essential
+    p_availability: state.availability, p_requested: state.requested, p_essential: state.essential,
+    p_quantity_on_hand: state.quantityOnHand, p_quantity_unit: state.quantityUnit,
+    p_refill_at: state.refillAt
   });
   if (error) throw error;
   return data;

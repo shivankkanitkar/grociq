@@ -1,6 +1,14 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createPilotClient, sendEmailCode, verifyEmailCode, loadMembership, inviteLink } from '../../pilot/js/auth.js';
+import { createPilotClient, signInWithGoogle, sendEmailCode, verifyEmailCode, loadMembership, createHousehold, inviteLink } from '../../pilot/js/auth.js';
+
+test('Google sign-in returns to the grocery app', async () => {
+  const client = { auth: { async signInWithOAuth(options) {
+    assert.deepEqual(options, { provider: 'google', options: { redirectTo: 'https://grociq.vercel.app/app/' } });
+    return { error: null };
+  } } };
+  await signInWithGoogle(client, 'https://grociq.vercel.app/app/');
+});
 
 test('sign-in uses the isolated project and normalizes the email', async () => {
   const calls = [];
@@ -31,6 +39,15 @@ test('membership fetch does not invent a household when the server returns none'
   assert.equal(await loadMembership(client), null);
 });
 
+test('one-person household creation records the chosen US shopping rhythm', async () => {
+  const client = { async rpc(name, args) {
+    assert.equal(name, 'create_household');
+    assert.deepEqual(args, { p_name: 'My kitchen', p_timezone: 'America/New_York', p_shopping_cycle_days: 14 });
+    return { data: 'household-1', error: null };
+  } };
+  assert.equal(await createHousehold(client, 'My kitchen', 'America/New_York', '14'), 'household-1');
+});
+
 test('invite link encodes the token without an automatic send', () => {
-  assert.equal(inviteLink('https://preview.example.test', 'a b'), 'https://preview.example.test/pilot/?invite=a%20b');
+  assert.equal(inviteLink('https://preview.example.test', 'a b'), 'https://preview.example.test/app/?invite=a%20b');
 });

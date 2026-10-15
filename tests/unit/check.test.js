@@ -26,6 +26,17 @@ test('three dated purchases can suggest a check; later availability postpones it
   assert.match(refillSuggestions(data, '2026-09-28', 'America/New_York')[0].reason, /Check if needed/);
 });
 
+test('confirmed stock at the refill point is useful unless a newer purchase makes it stale', () => {
+  const item = { id: 'oats', name: 'Oats', availability: 'unknown', requested: false, essential: true,
+    quantity_on_hand: '1.00', quantity_unit: 'pack', refill_at: '1.00',
+    quantity_confirmed_at: '2026-10-12T14:00:00Z' };
+  const data = { items: [item], purchases: [], lines: [] };
+  assert.match(refillSuggestions(data, '2026-10-12', 'America/New_York')[0].reason, /1 pack left/);
+  data.purchases.push({ id: 'later', purchased_on: '2026-10-13' });
+  data.lines.push({ item_id: 'oats', purchase_id: 'later', line_total_cents: 600 });
+  assert.equal(refillSuggestions(data, '2026-10-13', 'America/New_York').length, 0);
+});
+
 test('threshold and budget use chosen useful additions only', () => {
   const suggestions = [{ id:'milk', estimated_cents:700, essential:true }, { id:'chips', estimated_cents:300, essential:false }];
   const result = checkBasket({ groceriesCents:4300, thresholdCents:5000, charges:[null,null,null,null] },

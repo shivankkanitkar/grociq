@@ -1,19 +1,18 @@
 # GrocIQ
 
-The root `index.html` is the public, single-page waitlist. It uses plain HTML, CSS and JavaScript. The form sends submissions to the existing Supabase waitlist table using a browser-safe key and insert-only row policy.
+GrocIQ is a grocery-management website for busy US households. The public landing page and waitlist live at `/`; the signed-in grocery workspace lives at `/app/`. Both are static HTML, CSS, and vanilla JavaScript, deployed by connecting this GitHub repository to Vercel. Visitors need no local Node.js installation.
 
-## Public site
+## What the app does
 
-The GitHub repository is connected to Vercel. Vercel serves `index.html` without a build step. Do not replace the root page with the pilot or point the waitlist at a household database.
+One person can start a grocery space and optionally invite one partner. Household members can track grocery availability and quantities, record and correct purchases, review spending against a monthly budget, and run a pre-order check for relevant refills. Purchases are entered manually or drafted from a receipt photo and reviewed before saving. Receipt text extraction runs in the browser; the image is not uploaded or stored. The app does not place orders or connect to grocery stores.
 
-## Private couples pilot (in development)
+The `/app/` workspace uses Supabase Auth and a separate Supabase database from the public waitlist. The browser contains only a Supabase publishable key; household data is protected by row-level security and member-scoped database functions. SQL changes are in `supabase/migrations/` and must be applied to the app database separately from Vercel deployment.
 
-The separate `/pilot/` page is for a two-person US household. It points only to the isolated GrocIQ Couples Pilot Test project in North Virginia, never to the public waitlist database. Its SQL migrations live in `supabase/migrations/` and have been applied to that test project. The first household can be created only by the approved pilot email; a second verified email joins through a private, expiring invitation.
+## Deploy
 
-The pilot code now includes a shared grocery list, reviewed manual purchases, a monthly USD budget and an optional pre-order check. It uses confirmed purchases for spending, keeps unknown fees unknown, and does not place grocery orders. Receipt field mapping and file-type checks have synthetic unit tests, but upload, extraction, cleanup and a real two-person browser journey are still pending. **Do not enter real household or receipt data yet.**
+1. Upload or push this repository to GitHub.
+2. Import it into Vercel as a static site. No build command, package install, or environment variables are needed for the website.
+3. Configure the app's Supabase Auth provider and allowed redirect URLs before enabling sign-in in `pilot/js/config.js`. Add the exact deployed hostname to its allowlist. Do not use a service-role key in browser code.
+4. Open `/app/` on the deployment and complete a real sign-in, grocery update, purchase, budget, and sign-out test before sharing it as a working app.
 
-Six-digit email sign-in is intentionally disabled in the test-page configuration until custom SMTP and an email template are tested. Supabase requires custom SMTP to customize a new free project's template for codes. The exact Vercel test-branch alias is connected to the isolated test project, but email sign-in remains disabled. Configure and test a sending domain and provider, then switch `emailCodesReady` in `pilot/js/config.js` and verify two separate accounts. Do not enable sign-in just by changing that flag before the provider test passes.
-
-Unknown Vercel hostnames fail closed. The pilot is not wired to a production Supabase project or approved for a real-couple launch. GitHub-to-Vercel deployment serves static files only; database migrations and service configuration must be applied separately under the release approval gates.
-
-No Node.js installation is needed to view or deploy the static pages through GitHub and Vercel. Developer-only checks run in GitHub Actions and do not change the waitlist database.
+The root landing-page waitlist remains separate. `npm test` and `npm run test:e2e` are developer checks; GitHub Actions runs them without requiring users to install Node.js.
